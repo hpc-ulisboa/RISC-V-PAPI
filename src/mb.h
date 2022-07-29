@@ -64,7 +64,7 @@
 #endif
 
 #elif defined(__riscv)
-#define rmb() asm volatile("lfence":::"memory")
+#define rmb() asm volatile("fence":::"memory")
 
 #else
 #error Need to define rmb for this architecture!
