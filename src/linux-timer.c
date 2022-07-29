@@ -305,17 +305,21 @@ get_cycles( void )
 /************************/
 
 #elif defined(__riscv)
-#if (__riscv_xlen == 64)
 static inline long long
 get_cycles( void )
 {
    register unsigned long ret;
+   
+#if (__riscv_xlen == 64)
    __asm__ __volatile__ ("csrr %0, 0xc00" : "=r" (ret));
                            // 0xc00 -> CSR_Cycle for RV64
+#elif (__riscv_xlen == 32)
+   __asm__ __volatile__ ("csrr %0, 0xc80" : "=r" (ret));
+                           // 0xc80 -> CSR_Cycle for RV32
+#endif
 
    return ret;
 }
-#endif
 
 
 
