@@ -300,6 +300,23 @@ get_cycles( void )
 	return ret;
 }
 
+/************************/
+/* RISC-V get_cycles()  */
+/************************/
+
+#elif defined(__riscv)
+#if (__riscv_xlen == 64)
+static inline long long
+get_cycles( void )
+{
+   register unsigned long ret;
+   __asm__ __volatile__ ("csrr %0, 0xc00" : "=r" (ret));
+                           // 0xc00 -> CSR_Cycle for RV64
+
+   return ret;
+}
+#endif
+
 
 
 #elif !defined(HAVE_GETTIMEOFDAY) && !defined(HAVE_CLOCK_GETTIME)
