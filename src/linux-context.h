@@ -40,6 +40,10 @@ typedef ucontext_t hwd_ucontext_t;
 #elif defined(__hppa__)
 #define OVERFLOW_ADDRESS(ctx) ctx.ucontext->uc_mcontext.sc_iaoq[0]
 #elif defined(__riscv)
+/*
+ * The index of Program Counter (REG_PC) was obtained by looking at kernel source code.
+ */
+#define REG_PC 0
 #define OVERFLOW_ADDRESS(ctx) ctx.ucontext->uc_mcontext.__gregs[REG_PC]
 #else
 #error "OVERFLOW_ADDRESS() undefined!"
