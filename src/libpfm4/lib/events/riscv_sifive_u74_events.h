@@ -4,7 +4,7 @@
  * Section 4.9.5 Event Selector Encodings
  */
 
-static const riscv_entry_t sifive_u74_pe[] = {
+static const riscv_entry_t riscv_sifive_u74_pe[] = {
     // Instruction Commit Events: .code[7:0]=0
     {.name = "EXCEPTION_TAKEN",
      .code = 0x0000100,
