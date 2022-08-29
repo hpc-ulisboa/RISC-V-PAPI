@@ -11,6 +11,7 @@ typedef struct
     const char *desc;  /* event description */
 } riscv_entry_t;
 
+#define RISCV_PLM (PFM_PLM0 | PFM_PLM3 | PFM_PLMH)
 
 extern int pfm_riscv_detect_sifive_u74(void *this);
 
