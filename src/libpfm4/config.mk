@@ -81,6 +81,12 @@ endif
 ifeq (mips,$(findstring mips,$(ARCH)))
 override ARCH=mips
 endif
+ifeq (riscv64,$(findstring riscv64,$(ARCH)))
+override ARCH=riscv
+endif
+ifeq (riscv,$(findstring riscv,$(ARCH)))
+override ARCH=riscv
+endif
 
 ifeq (MINGW,$(findstring MINGW,$(SYS)))
 override SYS=WINDOWS
@@ -175,6 +181,14 @@ endif
 
 ifeq ($(ARCH),cell)
 CONFIG_PFMLIB_CELL=y
+endif
+
+ifeq (($ARCH),riscv)
+CONFIG_PFMLIB_ARCH_RISCV=y
+endif
+
+ifeq ($(ARCH),riscv64)
+CONFIG_PFMLIB_ARCH_RISCV64=y
 endif
 
 
