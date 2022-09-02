@@ -399,9 +399,9 @@ INC_ARM64=pfmlib_arm_priv.h			\
 	events/arm_hisilicon_kunpeng_events.h \
 	events/arm_hisilicon_kunpeng_unc_events.h
 
-INC_ARM=pfmlib_riscv_priv.h
+INC_RISCV=pfmlib_riscv_priv.h
 
-INC_ARM64=pfmlib_riscv_priv.h \
+INC_RISCV64=pfmlib_riscv_priv.h \
 	events/riscv_sifive_u74_events.h
 
 INCDEP=$(INC_COMMON) $(INCARCH)
