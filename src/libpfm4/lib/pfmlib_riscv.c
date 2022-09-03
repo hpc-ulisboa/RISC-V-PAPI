@@ -14,8 +14,25 @@ static int pfm_riscv_detect_sifive_u74(void *this)
     return PFM_SUCCESS;
 }
 
+static void pfm_riscv_display_reg(void *this, pfmlib_event_desc_t *e, pfm_riscv_reg_t reg)
+{
+    __pfm_vbprintf("[0x%x] %s\n", reg.val, e->fstr);
+}
+
 int pfm_riscv_get_encoding(void *this, pfmlib_event_desc_t *e)
 {
+    const riscv_entry_t *pe = this_pe(this);
+    pfm_riscv_reg_t reg;
+
+    reg.val = pe[e->event].code;
+
+    evt_strcat(e->fstr, "%s", pe[e->event].name);
+
+    e->codes[0] = reg.val;
+    e->count = 1;
+
+    pfm_riscv_display_reg(this, e, reg);
+
     return PFM_SUCCESS;
 }
 
