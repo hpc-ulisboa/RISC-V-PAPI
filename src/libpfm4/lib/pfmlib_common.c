@@ -636,6 +636,14 @@ static pfmlib_pmu_t *pfmlib_pmus[]=
 	&s390x_cpum_cf_support,
 	&s390x_cpum_sf_support,
 #endif
+
+#ifdef CONFIG_PFMLIB_ARCH_RISCV
+#endif
+
+#ifdef CONFIG_PFMLIB_ARCH_RISCV64
+	&riscv_sifive_u74_support,
+#endif
+
 #ifdef __linux__
 	&perf_event_support,
 	&perf_event_raw_support,
