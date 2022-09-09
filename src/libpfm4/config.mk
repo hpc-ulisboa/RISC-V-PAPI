@@ -82,7 +82,7 @@ ifeq (mips,$(findstring mips,$(ARCH)))
 override ARCH=mips
 endif
 ifeq (riscv64,$(findstring riscv64,$(ARCH)))
-override ARCH=riscv
+override ARCH=riscv64
 endif
 ifeq (riscv,$(findstring riscv,$(ARCH)))
 override ARCH=riscv
