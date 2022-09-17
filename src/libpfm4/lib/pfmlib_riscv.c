@@ -106,8 +106,8 @@ int pfm_riscv_get_event_info(void *this, int idx, pfm_event_info_t *info)
 
 /* RISC-V SiFive U74 support */
 pfmlib_pmu_t riscv_sifive_u74_support = {
-    .desc = "SiFive U74",
-    .name = "riscv_u74",
+    .desc = "RISC-V SiFive U74",
+    .name = "riscv_sifive_u74",
     .pmu = PFM_PMU_RISCV_SIFIVE_U74,
     .pme_count = LIBPFM_ARRAY_SIZE(riscv_sifive_u74_pe),
     .type = PFM_PMU_TYPE_CORE,
