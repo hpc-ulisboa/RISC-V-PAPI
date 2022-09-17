@@ -134,6 +134,8 @@ decode_vendor_string( char *s, int *vendor )
 		*vendor = PAPI_VENDOR_MIPS;
 	else if ( strcasecmp( s, "SiCortex" ) == 0 )
 		*vendor = PAPI_VENDOR_MIPS;
+	else if ( strcasecmp( s, "RISCV_SIFIVE" ) == 0)
+		*vendor = PAPI_VENDOR_RISCV_SIFIVE;
 	else
 		*vendor = PAPI_VENDOR_UNKNOWN;
 }
@@ -456,6 +458,19 @@ _linux_get_cpu_info( PAPI_hw_info_t *hwinfo, int *cpuinfo_mhz )
 							break;
 						default:
 							strcpy( hwinfo->vendor_string, "ARM_UNKNOWN" );
+						}
+					}
+					else {
+						/* "uarch" indicates RISC-V */
+						s = search_cpu_info(f, "uarch");
+						if (s)
+						{
+							v = strtok(s, ",");
+							if (v)
+							{
+								if ((strcasecmp(v, "sifive") == 0))
+									strcpy(hwinfo->vendor_string, "RISCV_SIFIVE");
+							}
 						}
 					}
 				}
