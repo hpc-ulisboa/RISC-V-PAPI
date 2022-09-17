@@ -1,6 +1,6 @@
 /*
  * SiFive U74 RISC-V Core
- * Based on SiFive FU740-C000 Manual v1p6
+ * Based on SiFive U74-MC Core Complex Manual 21G3.02.00
  * Section 4.9.5 Event Selector Encodings
  */
 
@@ -61,9 +61,9 @@ static const riscv_entry_t riscv_sifive_u74_pe[] = {
      .code = 0x2000000,
      .desc = "Other floating-point instruction retired"},
     // Microarchitectural Events: .code[7:0]=1
-    {.name = "LOAD_USE_INTERLOCK",
+    {.name = "ADDRESSGEN_INTERLOCK",
      .code = 0x0000101,
-     .desc = "Load-use interlock"},
+     .desc = "Address-generation interlock"},
     {.name = "LONGLAT_INTERLOCK",
      .code = 0x0000201,
      .desc = "Long-latency interlock"},
@@ -110,4 +110,7 @@ static const riscv_entry_t riscv_sifive_u74_pe[] = {
     {.name = "DATA_TLB_MISS",
      .code = 0x0001002,
      .desc = "Data TLB miss"},
+    {.name = "UTLB_MISS",
+     .code = 0x0002002,
+     .desc = "UTLB miss"},
 };
