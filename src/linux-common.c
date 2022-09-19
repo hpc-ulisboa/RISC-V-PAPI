@@ -465,6 +465,7 @@ _linux_get_cpu_info( PAPI_hw_info_t *hwinfo, int *cpuinfo_mhz )
 						s = search_cpu_info(f, "uarch");
 						if (s)
 						{
+							char *v;
 							v = strtok(s, ",");
 							if (v)
 							{
