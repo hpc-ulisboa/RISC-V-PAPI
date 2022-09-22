@@ -183,7 +183,7 @@ ifeq ($(ARCH),cell)
 CONFIG_PFMLIB_CELL=y
 endif
 
-ifeq (($ARCH),riscv)
+ifeq ($(ARCH),riscv)
 CONFIG_PFMLIB_ARCH_RISCV=y
 endif
 
