@@ -7,7 +7,7 @@
 #include "pfmlib_priv.h" /* library private */
 #include "pfmlib_riscv_priv.h"
 
-#include "events/riscv_sifive_u74_events.h"; /* SiFive U74 event tables */
+#include "events/riscv_sifive_u74_events.h" /* SiFive U74 event tables */
 
 static int pfm_riscv_detect_sifive_u74(void *this)
 {
