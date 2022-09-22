@@ -215,15 +215,14 @@ CFLAGS += -DCONFIG_PFMLIB_CELL
 endif
 
 ifeq ($(CONFIG_PFMLIB_ARCH_RISCV),y)
+
+ifeq ($(SYS),Linux)
+SRCS += pfmlib_riscv_perf_event.c
+endif
+
 INCARCH = $(INC_RISCV)
 SRCS += pfmlib_riscv.c
 CFLAGS += -DCONFIG_PFMLIB_ARCH_RISCV
-endif
-
-ifeq ($(CONFIG_PFMLIB_ARCH_RISCV64),y)
-INCARCH = $(INC_RISCV64)
-SRCS += pfmlib_riscv.c
-CFLAGS += -DCONFIG_PFMLIB_ARCH_RISCV64
 endif
 
 ifeq ($(SYS),Linux)
@@ -399,9 +398,7 @@ INC_ARM64=pfmlib_arm_priv.h			\
 	events/arm_hisilicon_kunpeng_events.h \
 	events/arm_hisilicon_kunpeng_unc_events.h
 
-INC_RISCV=pfmlib_riscv_priv.h
-
-INC_RISCV64=pfmlib_riscv_priv.h \
+INC_RISCV=pfmlib_riscv_priv.h \
 	events/riscv_sifive_u74_events.h
 
 INCDEP=$(INC_COMMON) $(INCARCH)

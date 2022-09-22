@@ -82,7 +82,7 @@ ifeq (mips,$(findstring mips,$(ARCH)))
 override ARCH=mips
 endif
 ifeq ($(ARCH),riscv64)
-override ARCH=riscv64
+override ARCH=riscv
 endif
 ifeq ($(ARCH),riscv)
 override ARCH=riscv
@@ -185,10 +185,6 @@ endif
 
 ifeq ($(ARCH),riscv)
 CONFIG_PFMLIB_ARCH_RISCV=y
-endif
-
-ifeq ($(ARCH),riscv64)
-CONFIG_PFMLIB_ARCH_RISCV64=y
 endif
 
 
