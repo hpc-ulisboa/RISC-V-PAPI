@@ -18,6 +18,6 @@ typedef union pfm_riscv_reg
 
 #define RISCV_PLM (PFM_PLM0 | PFM_PLM3 | PFM_PLMH)
 
-extern int pfm_riscv_get_perf_encoding(void *this, pfmlib_attr_desc_t *e);
+extern int pfm_riscv_get_perf_encoding(void *this, pfmlib_event_desc_t *e);
 
 #endif /* __PFMLIB_RISCV_PRIV_H__ */
