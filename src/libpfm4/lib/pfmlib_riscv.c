@@ -95,6 +95,7 @@ int pfm_riscv_get_event_info(void *this, int idx, pfm_event_info_t *info)
     info->name = pe[idx].name;
     info->desc = pe[idx].desc;
     info->code = pe[idx].code;
+    info->equiv = NULL;
     info->idx = idx;
     info->pmu = pmu->pmu;
 
