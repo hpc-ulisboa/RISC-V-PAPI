@@ -243,8 +243,8 @@ validation_tests:	$(LIBS) testlib
 ctests: $(LIBS) testlib validation_tests
 	$(SETPATH) $(MAKE) -C ctests
 
-ftests: $(LIBS) testlib
-	$(SETPATH) $(MAKE) -C ftests
+#ftests: $(LIBS) testlib //TODO_RISCV: Uncomment this before release version if possible
+#	$(SETPATH) $(MAKE) -C ftests
 
 
 

@@ -638,9 +638,6 @@ static pfmlib_pmu_t *pfmlib_pmus[]=
 #endif
 
 #ifdef CONFIG_PFMLIB_ARCH_RISCV
-#endif
-
-#ifdef CONFIG_PFMLIB_ARCH_RISCV64
 	&riscv_sifive_u74_support,
 #endif
 
