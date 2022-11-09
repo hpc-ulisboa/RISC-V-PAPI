@@ -11,7 +11,7 @@
 
 static int pfm_riscv_detect_sifive_u74(void *this)
 {
-    return PFM_SUCCESS;
+    return PFM_SUCCESS; // TODO_RISCV:
 }
 
 static void pfm_riscv_display_reg(void *this, pfmlib_event_desc_t *e, pfm_riscv_reg_t reg)
