@@ -117,6 +117,7 @@ pfmlib_pmu_t riscv_sifive_u74_support = {
     .pmu_detect = pfm_riscv_detect_sifive_u74,
     .num_cntrs = 2,
     .num_fixed_cntrs = 2,
+    .max_encoding = 1,
 
     .get_event_encoding[PFM_OS_NONE] = pfm_riscv_get_encoding,
     PFMLIB_ENCODE_PERF(pfm_riscv_get_perf_encoding),
