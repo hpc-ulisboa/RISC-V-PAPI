@@ -162,6 +162,11 @@ pe_vendor_fixups(papi_vector_t *vector)
 		vector->cmp_info.available_domains |= PAPI_DOM_OTHER;
 	}
 
+	/* RISC-V*/
+	if (_papi_hwi_system_info.hw_info.vendor == PAPI_VENDOR_RISCV_SIFIVE) {
+		vector->cmp_info.available_domains = 0x0;
+	}
+
 	return PAPI_OK;
 }
 
