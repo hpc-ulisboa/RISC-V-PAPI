@@ -80,6 +80,17 @@ int instructions_million(void) {
 		: "cc", "r2" /* clobbered */
 	);
 	return 0;
+
+#elif defined(__riscv)
+	asm("	li x5,333332 # set count\n"
+		"55:\n"
+		"	addi x5,x5,-1\n"
+		"	bnez x5,55 #repeat till zero\n"
+		: /* no output registers */
+		: /* no inputs */
+		: "cc", "x5" /* clobbered */);
+
+	return 0;
 #endif
 
 	return CODE_UNIMPLEMENTED;
