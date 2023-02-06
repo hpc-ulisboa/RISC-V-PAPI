@@ -58,14 +58,12 @@
 
 #if defined(__KNC__)
 #define rmb() __sync_synchronize()
-
-#elif defined(__riscv)
-#define rmb() asm volatile("fence":::"memory")
-
 #else
 #define rmb() asm volatile("lfence":::"memory")
 #endif
 
+#elif defined(__riscv)
+#define rmb() asm volatile("fence":::"memory")
 
 #else
 #error Need to define rmb for this architecture!
