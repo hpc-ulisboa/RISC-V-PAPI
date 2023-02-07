@@ -308,20 +308,7 @@ get_cycles( void )
 static inline long long
 get_cycles( void )
 {
-   register long long ret = 0;
-   
-#if (__riscv_xlen == 64)
-   __asm__ __volatile__ ("rdcycle   %0\n\t"
-                        : "=r" (ret));
-#elif (__riscv_xlen == 32)
-   unsigned int u, l; // Upper and lower 32bits
-   __asm__ __volatile__ ("rdcycleh  %0\n\t"
-                        "rdcycle %1\n\t"
-                        : "=r"(u), "=r"(l));
-   ( ret ) = ( ( long long ) l ) | ( ( ( long long ) u ) << 32 );
-#endif
-
-   return ret;
+   return 0;
 }
 
 
