@@ -311,14 +311,13 @@ get_cycles( void )
    register long long ret = 0;
    
 #if (__riscv_xlen == 64)
-   __asm__ __volatile__ ("csrrs %0, 0xc00" : "=r" (ret));
-                           // 0xc00 -> CSR_Cycle for RV64
+   __asm__ __volatile__ ("rdcycle   %0\n\t"
+                        : "=r" (ret));
 #elif (__riscv_xlen == 32)
    unsigned int u, l; // Upper and lower 32bits
-   __asm__ __volatile__ ("csrrs %0, 0xc00" : "=r" (l));
-   __asm__ __volatile__ ("csrrs %0, 0xc80" : "=r" (u));
-                           // 0xc00 -> lower 32bits CSR_Cycle for RV32
-                           // 0xc80 -> upper 32bits CSR_Cycle for RV32
+   __asm__ __volatile__ ("rdcycleh  %0\n\t"
+                        "rdcycle %1\n\t"
+                        : "=r"(u), "=r"(l));
    ( ret ) = ( ( long long ) l ) | ( ( ( long long ) u ) << 32 );
 #endif
 
