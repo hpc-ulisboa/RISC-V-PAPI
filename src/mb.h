@@ -58,7 +58,6 @@
 
 #if defined(__KNC__)
 #define rmb() __sync_synchronize()
-
 #else
 #define rmb() asm volatile("lfence":::"memory")
 #endif

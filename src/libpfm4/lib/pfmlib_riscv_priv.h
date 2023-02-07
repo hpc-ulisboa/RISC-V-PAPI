@@ -16,7 +16,7 @@ typedef union pfm_riscv_reg
     unsigned int val;
 } pfm_riscv_reg_t;
 
-#define RISCV_PLM (PFM_PLM0 | PFM_PLM3 | PFM_PLMH)
+#define RISCV_PLM (0x0)
 
 extern int pfm_riscv_get_perf_encoding(void *this, pfmlib_event_desc_t *e);
 

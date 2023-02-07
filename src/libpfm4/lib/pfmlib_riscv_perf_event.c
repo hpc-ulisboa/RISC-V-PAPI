@@ -35,5 +35,11 @@ int pfm_riscv_get_perf_encoding(void *this, pfmlib_event_desc_t *e)
     reg.val = e->codes[0];
 
     attr->config = reg.val;
+
+    // risc-v can not set privilege levels
+    attr->exclude_hv = 0;
+    attr->exclude_kernel = 0;
+    attr->exclude_user = 0;
+
     return PFM_SUCCESS;
 }
