@@ -11,20 +11,18 @@ CFLAGS=-Wextra -Wall
 MODE=-g
 
 INCLUDE=-I../../papi/include
-
-ALL = event_exception_taken event_integer_load_retired
-
 PAPILIB=../src/libpapi.a
+
+SRCS = event_exception_taken event_integer_load_retired
+PROGS = $(SRCS:.c=)
 
 .PHONY : all
 
-all: $(ALL)
+all: $(PROGS)
 
-event_exception_taken: event_exception_taken.c
-	$(CC) $(CFLAGS) $(MODE) event_exception_taken.c -o event_exception_taken $(INCLUDE) $(PAPILIB)
-
-event_integer_load_retired: event_integer_load_retired.c
-	$(CC) $(CFLAGS) $(MODE) event_integer_load_retired.c -o event_integer_load_retired $(INCLUDE) $(PAPILIB)
+$(PROGS): % : %.c
+        $(CC) $(CFLAGS) $(MODE) $< -o $@ $(INCLUDE) $(PAPILIB)
 
 clean:
-	rm -f $(ALL)
+      	rm -f $(PROGS)
+
