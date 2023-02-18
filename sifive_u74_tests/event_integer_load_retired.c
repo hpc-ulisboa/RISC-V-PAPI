@@ -11,7 +11,7 @@ int main(int argc, char **argv) {
 
         int retval = 0;
         int eventset = PAPI_NULL;
-        long long count[1];
+        long long count;
 
         retval = PAPI_library_init(PAPI_VER_CURRENT);
         if (retval != PAPI_VER_CURRENT) {
@@ -38,14 +38,14 @@ int main(int argc, char **argv) {
 
         // Some test code here
 
-        retval = PAPI_stop(eventset, count);
+        retval = PAPI_stop(eventset, &count);
 
         if (retval != PAPI_OK) {
                 fprintf(stderr, "Failed to read INTEGER LOAD RETIRED count");
                 exit(EXIT_FAILURE);
         }
 
-        printf("Exeptions taken : %lld \n", count[0]);
+        printf("Exeptions taken : %lld \n", count);
 
         exit(EXIT_SUCCESS);
 }

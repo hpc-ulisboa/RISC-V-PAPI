@@ -10,11 +10,11 @@ CFLAGS=-Wextra -Wall
 # Compiler mode
 MODE=-g
 
-INCLUDE=-I../papi/include
+INCLUDE=-I../../papi/include
 
 ALL = event_exception_taken event_integer_load_retired
 
-PAPILIB=../papi-risc-v/src/libpapi.a
+PAPILIB=../src/libpapi.a
 
 .PHONY : all
 
