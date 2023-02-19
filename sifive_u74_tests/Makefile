@@ -13,16 +13,11 @@ MODE=-g
 INCLUDE=-I../../papi/include
 PAPILIB=../src/libpapi.a
 
-SRCS = event_exception_taken event_integer_load_retired
-PROGS = $(SRCS:.c=)
+.PHONY : sifive_u74_test
 
-.PHONY : all
-
-all: $(PROGS)
-
-$(PROGS): % : %.c
-        $(CC) $(CFLAGS) $(MODE) $< -o $@ $(INCLUDE) $(PAPILIB)
+sifive_u74_test: sifive_u74_test.c sifive_u74_events.h
+	$(CC) $(CFLAGS) $(MODE) $< -o $@ $(INCLUDE) $(PAPILIB)
 
 clean:
-      	rm -f $(PROGS)
+	rm -f sifive_u74_test
 
