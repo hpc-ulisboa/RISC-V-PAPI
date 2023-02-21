@@ -7,13 +7,12 @@
 
 #include "papi.h"
 
-int
-main(int argc, char **argv)
+int main(int argc, char **argv)
 {
         int retval = 0;
         int eventset = PAPI_NULL;
         long long count;
-        
+
         // Initialize PAPI library
         retval = PAPI_library_init(PAPI_VER_CURRENT);
         if (retval != PAPI_VER_CURRENT)
@@ -44,7 +43,7 @@ main(int argc, char **argv)
         // Start counting
         PAPI_start(eventset);
 
-        //TODO: Test code
+        system("./black_scholes 1000");
 
         // Stop counting and read the count value
         retval = PAPI_stop(eventset, &count);
