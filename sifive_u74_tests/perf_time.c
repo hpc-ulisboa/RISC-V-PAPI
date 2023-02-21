@@ -79,7 +79,7 @@ int main(int argc, char **argv)
         exit(EXIT_FAILURE);
     }
 
-    printf("%lld\n", buffer[0]);
+    printf("%lld\n", buffer[1]);
 
     seconds = end.tv_sec - begin.tv_sec;
     microseconds = end.tv_usec - begin.tv_usec;

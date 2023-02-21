@@ -70,5 +70,5 @@ int main(int argc, char **argv)
         exit(EXIT_FAILURE);
     }
 
-    printf("%lld\n", buffer[0]);
+    printf("%lld\n", buffer[1]);
 }
