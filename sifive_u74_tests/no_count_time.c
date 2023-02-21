@@ -9,7 +9,7 @@ int main(int argc, char **argv)
 
     gettimeofday(&begin, 0);
 
-    // TODO: Test Code
+    system("./black_scholes 1000");
 
     gettimeofday(&end, 0);
     
