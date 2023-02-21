@@ -15,7 +15,7 @@
 // Precision to use for calculations
 #define fptype float
 
-#define NUM_RUNS 1000000
+#define NUM_RUNS 100000
 
 typedef struct OptionData_
 {
