@@ -14,7 +14,7 @@ INCLUDE=-I../../papi/include
 PAPILIB=../src/libpapi.a
 
 SRCS = 	gettime_time.c \
-		kernal_time.c \
+		kernel_time.c \
 		papi_close_time.c \
 		papi_count_time.c \
 		papi_init_time.c \
