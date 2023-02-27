@@ -13,11 +13,8 @@ MODE=-g
 INCLUDE=-I../../papi/include
 PAPILIB=../src/libpapi.a
 
-SRCS = 	papi_no_time.c \
-		papi_time.c \
-		perf_no_time.c \
+SRCS = 	papi_time.c \
 		perf_time.c \
-		no_count_no_time.c \
 		no_count_time.c
 
 PROGS = $(SRCS:.c=)
