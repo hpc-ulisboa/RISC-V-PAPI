@@ -70,7 +70,7 @@ int main(int argc, char **argv)
                 exit(EXIT_FAILURE);
         }
 
-        printf("%lld\n", count);
+        // printf("%lld\n", count);
 
         subTimespec(start, finish, &delta);
         printf("%d.%.9ld\n", (int)delta.tv_sec, delta.tv_nsec);

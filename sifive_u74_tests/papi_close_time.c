@@ -68,7 +68,7 @@ int main(int argc, char **argv)
                 exit(EXIT_FAILURE);
         }
 
-        printf("%lld\n", count);
+        // printf("%lld\n", count);
 
         clock_gettime(CLOCK_MONOTONIC_RAW, &start);
         PAPI_shutdown();

@@ -70,7 +70,7 @@ int main(int argc, char **argv)
                 exit(EXIT_FAILURE);
         }
 
-        printf("%lld\n", count);
+        printf("%lld,", count);
 
         PAPI_shutdown();
 

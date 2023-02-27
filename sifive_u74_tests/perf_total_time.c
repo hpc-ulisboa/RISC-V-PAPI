@@ -88,7 +88,7 @@ int main(int argc, char **argv)
         exit(EXIT_FAILURE);
     }
 
-    printf("%lld\n", buffer[1]);
+    printf("%lld,", buffer[1]);
 
     close(fd);
 

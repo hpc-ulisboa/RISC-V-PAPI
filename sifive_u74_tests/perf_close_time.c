@@ -86,7 +86,7 @@ int main(int argc, char **argv)
         exit(EXIT_FAILURE);
     }
 
-    printf("%lld\n", buffer[1]);
+    // printf("%lld\n", buffer[1]);
 
     clock_gettime(CLOCK_MONOTONIC_RAW, &start);
     close(fd);

@@ -71,7 +71,7 @@ int main(int argc, char **argv)
         }
         clock_gettime(CLOCK_MONOTONIC_RAW, &finish);
 
-        printf("%lld\n", count);
+        printf("%lld,", count);
 
         subTimespec(start, finish, &delta);
         printf("%d.%.9ld\n", (int)delta.tv_sec, delta.tv_nsec);
