@@ -14,9 +14,9 @@ for ((i = 0; i < 100; i++)); do
     echo $(./perf_start_time) &>>$1
 done
 
-echo "end - 100 executions" >>$1
+echo "stop - 100 executions" >>$1
 for ((i = 0; i < 100; i++)); do
-    echo $(./perf_end_time) &>>$1
+    echo $(./perf_stop_time) &>>$1
 done
 
 echo "close - 100 executions" >>$1
@@ -46,9 +46,9 @@ for ((i = 0; i < 100; i++)); do
     echo $(./papi_start_time) &>>$1
 done
 
-echo "end - 100 executions" >>$1
+echo "stop - 100 executions" >>$1
 for ((i = 0; i < 100; i++)); do
-    echo $(./papi_end_time) &>>$1
+    echo $(./papi_stop_time) &>>$1
 done
 
 echo "close - 100 executions" >>$1
