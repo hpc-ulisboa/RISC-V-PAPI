@@ -251,7 +251,7 @@ int blackscholes()
     return 0;
 }
 
-int main(int argc, char **argv)
+void kernel()
 {
     FILE *file;
     int i;
@@ -260,15 +260,8 @@ int main(int argc, char **argv)
     int *buffer2;
     int rv;
 
-    // if (argc != 3)
-    if (argc != 2)
-    {
-        // printf("Usage:\n\t%s <nthreads> <inputFile> <outputFile>\n", argv[0]);
-        printf("Usage:\n\t%s <numOptions> <outputFile>\n", argv[0]);
-        exit(1);
-    }
     nThreads = 0; // atoi(argv[1]);
-    numOptions = atoi(argv[1]);
+    numOptions = 1000;
     // char *inputFile = argv[2];
     // char *outputFile = argv[2];
 
@@ -383,6 +376,4 @@ int main(int argc, char **argv)
 
     free(data);
     free(prices);
-
-    return 0;
 }

@@ -23,15 +23,15 @@ PROGS = $(SRCS:.c=)
 
 all : $(PROGS)
 
-$(PROGS): % : %.c black_scholes
-	$(CC) $(CFLAGS) $(MODE) $< -o $@ $(INCLUDE) $(PAPILIB)
+$(PROGS): % : %.c blackscholes.o
+	$(CC) $(CFLAGS) $(MODE) $< blackscholes.o -o $@ $(INCLUDE) $(PAPILIB) -lm
 
 sifive_u74_test: sifive_u74_test.c sifive_u74_events.h
 	$(CC) $(CFLAGS) $(MODE) $< -o $@ $(INCLUDE) $(PAPILIB)
 
-black_scholes : blackscholes.c
-	$(CC) $(CFLAGS) $(MODE) $< -o $@ -lm
+blackscholes.o : blackscholes.c
+	$(CC) $(CFLAGS) $(MODE) $< -c $@ -lm
 
 clean:
-	rm -f $(PROGS) black_scholes
+	rm -f $(PROGS) blackscholes.o
 
