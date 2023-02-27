@@ -4,18 +4,30 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
-#include <sys/time.h>
+#include <time.h>
 
 #include "papi.h"
+#include "blackscholes.h"
+
+void subTimespec(struct timespec t1, struct timespec t2, struct timespec *td)
+{
+        td->tv_nsec = t2.tv_nsec - t1.tv_nsec;
+        td->tv_sec = t2.tv_sec - t1.tv_sec;
+        if (td->tv_nsec < 0)
+        {
+                td->tv_nsec += 1000000000;
+                td->tv_sec--;
+        }
+}
 
 int main(int argc, char **argv)
 {
         int retval = 0;
         int eventset = PAPI_NULL;
         long long count;
-        struct timeval begin, end;
-        long seconds, microseconds;
-        double elapsed;
+        struct timespec start, finish, delta;
+
+        clock_gettime(CLOCK_MONOTONIC_RAW, &start);
 
         // Initialize PAPI library
         retval = PAPI_library_init(PAPI_VER_CURRENT);
@@ -34,10 +46,10 @@ int main(int argc, char **argv)
         }
 
         // Add event from event list
-        retval = PAPI_add_named_event(eventset, "PAPI_TOT_INS");
+        retval = PAPI_add_named_event(eventset, "PAPI_TOT_CYC");
         if (retval != PAPI_OK)
         {
-                fprintf(stderr, "Faield to add %s to eventset\n", "PAPI_TOT_INS");
+                fprintf(stderr, "Faield to add %s to eventset\n", "PAPI_TOT_CYC");
                 exit(EXIT_FAILURE);
         }
 
@@ -47,29 +59,24 @@ int main(int argc, char **argv)
         // Start counting
         PAPI_start(eventset);
 
-        gettimeofday(&begin, 0);
-
-        system("./black_scholes 1000");
-
-        gettimeofday(&end, 0);
+        kernel();
 
         // Stop counting and read the count value
         retval = PAPI_stop(eventset, &count);
 
         if (retval != PAPI_OK)
         {
-                fprintf(stderr, "Failed to read %s count\n", "PAPI_TOT_INS");
+                fprintf(stderr, "Failed to read %s count\n", "PAPI_TOT_CYC");
                 exit(EXIT_FAILURE);
         }
 
         printf("%lld\n", count);
 
-        seconds = end.tv_sec - begin.tv_sec;
-        microseconds = end.tv_usec - begin.tv_usec;
-        elapsed = seconds + microseconds * 1e-6;
-        printf("%.3f\n", elapsed);
-
         PAPI_shutdown();
+
+        clock_gettime(CLOCK_MONOTONIC_RAW, &finish);
+        subTimespec(start, finish, &delta);
+        printf("%d.%.9ld\n", (int)delta.tv_sec, delta.tv_nsec);
 
         exit(EXIT_SUCCESS);
 }

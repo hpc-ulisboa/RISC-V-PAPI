@@ -13,9 +13,20 @@ MODE=-g
 INCLUDE=-I../../papi/include
 PAPILIB=../src/libpapi.a
 
-SRCS = 	papi_time.c \
-		perf_time.c \
-		no_count_time.c
+SRCS = 	gettime_time.c \
+		kernal_time.c \
+		papi_close_time.c \
+		papi_count_time.c \
+		papi_init_time.c \
+		papi_start_time.c \
+		papi_stop_time.c \
+		papi_total_time.c \
+		perf_close_time.c \
+		perf_count_time.c \
+		perf_init_time.c \
+		perf_start_time.c \
+		perf_stop_time.c \
+		perf_total_time.c
 
 PROGS = $(SRCS:.c=)
 

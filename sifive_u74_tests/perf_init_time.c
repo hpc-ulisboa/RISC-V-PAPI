@@ -6,7 +6,9 @@
 #include <stdio.h>
 #include <errno.h>
 #include <unistd.h>
-#include <sys/time.h>
+#include <time.h>
+
+#include "blackscholes.h"
 
 #define READ_BUFFER_SIZE 771
 
@@ -19,23 +21,33 @@ perf_event_open(struct perf_event_attr *hw_event, pid_t pid, int cpu, int group_
     return ret;
 }
 
+void subTimespec(struct timespec t1, struct timespec t2, struct timespec *td)
+{
+    td->tv_nsec = t2.tv_nsec - t1.tv_nsec;
+    td->tv_sec = t2.tv_sec - t1.tv_sec;
+    if (td->tv_nsec < 0)
+    {
+        td->tv_nsec += 1000000000;
+        td->tv_sec--;
+    }
+}
+
 int main(int argc, char **argv)
 {
     struct perf_event_attr pe;
     long long buffer[READ_BUFFER_SIZE];
     int cnt = 0, fd, retval = 0;
 
-    struct timeval begin, end;
-    long seconds, microseconds;
-    double elapsed;
+    struct timespec start, finish, delta;
 
     memset(&pe, 0, sizeof(struct perf_event_attr));
     memset(&buffer, 0, READ_BUFFER_SIZE * sizeof(long long));
 
     pe.type = PERF_TYPE_HARDWARE;
-    pe.config = PERF_COUNT_HW_INSTRUCTIONS;
+    pe.config = PERF_COUNT_HW_CPU_CYCLES;
     pe.read_format = 8;
 
+    clock_gettime(CLOCK_MONOTONIC_RAW, &start);
     fd = perf_event_open(&pe, 0, -1, -1, 0);
     if (fd == -1)
     {
@@ -43,6 +55,7 @@ int main(int argc, char **argv)
         fprintf(stderr, "%s\n", strerror(errno));
         exit(EXIT_FAILURE);
     }
+    clock_gettime(CLOCK_MONOTONIC_RAW, &finish);
 
     retval = ioctl(fd, PERF_EVENT_IOC_RESET, NULL);
     if (retval == -1)
@@ -58,11 +71,7 @@ int main(int argc, char **argv)
         exit(EXIT_FAILURE);
     }
 
-    gettimeofday(&begin, 0);
-
-    system("./black_scholes 1000");
-
-    gettimeofday(&end, 0);
+    // kernel();
 
     retval = ioctl(fd, PERF_EVENT_IOC_DISABLE, NULL);
     if (retval == -1)
@@ -81,10 +90,8 @@ int main(int argc, char **argv)
 
     printf("%lld\n", buffer[1]);
 
-    seconds = end.tv_sec - begin.tv_sec;
-    microseconds = end.tv_usec - begin.tv_usec;
-    elapsed = seconds + microseconds * 1e-6;
-    printf("%.3f\n", elapsed);
+    subTimespec(start, finish, &delta);
+    printf("%d.%.9ld\n", (int)delta.tv_sec, delta.tv_nsec);
 
     close(fd);
 }

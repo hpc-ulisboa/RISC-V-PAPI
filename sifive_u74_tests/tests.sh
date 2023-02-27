@@ -1,54 +1,79 @@
 #! /bin/bash
 # Compile test files
 echo $(make)
-TIMEFORMAT=%R
 
-echo "no_count_no_time - 40 executions" >> $1
-for ((i=0; i<40;i++))
-do
-    time {
-        echo $(time ./no_count_no_time) &>> $1
-    } &>> $1
+#################################################
+echo "### PERF TESTS ###" >>$1
+echo "init - 100 executions" >>$1
+for ((i = 0; i < 100; i++)); do
+    echo $(time ./perf_init_time) &>>$1
 done
 
-echo "Perf_no_time - 40 executions" >> $1
-for ((i=0; i<40;i++))
-do
-    time {
-        echo $(time ./perf_no_time) &>> $1
-    } &>> $1
+echo "start - 100 executions" >>$1
+for ((i = 0; i < 100; i++)); do
+    echo $(time ./perf_start_time) &>>$1
 done
 
-echo "PAPI_no_time - 40 executions" >> $1
-for ((i=0; i<40;i++))
-do
-    time {
-        echo $(time ./papi_no_time) &>> $1
-    } &>> $1
+echo "end - 100 executions" >>$1
+for ((i = 0; i < 100; i++)); do
+    echo $(time ./perf_end_time) &>>$1
 done
 
-echo "no_count_time - 40 executions" >> $1
-for ((i=0; i<40;i++))
-do
-    time {
-        echo $(time ./no_count_time) &>> $1
-    } &>> $1
+echo "close - 100 executions" >>$1
+for ((i = 0; i < 100; i++)); do
+    echo $(time ./perf_close_time) &>>$1
 done
 
-echo "Perf_time - 40 executions" >> $1
-for ((i=0; i<40;i++))
-do
-    time {
-        echo $(time ./perf_time) &>> $1
-    } &>> $1
+echo "count - 40 executions" >>$1
+for ((i = 0; i < 40; i++)); do
+    echo $(time ./perf_count_time) &>>$1
 done
 
-echo "PAPI_time - 40 executions" >> $1
-for ((i=0; i<40;i++))
-do
-    time {
-        echo $(time ./papi_time) &>> $1
-    } &>> $1
+echo "total - 40 executions" >>$1
+for ((i = 0; i < 40; i++)); do
+    echo $(time ./perf_total_time) &>>$1
 done
 
-echo $(unset TIMEFORMAT)
+#################################################
+echo "### PAPI TESTS ###" >>$1
+echo "init - 100 executions" >>$1
+for ((i = 0; i < 100; i++)); do
+    echo $(time ./papi_init_time) &>>$1
+done
+
+echo "start - 100 executions" >>$1
+for ((i = 0; i < 100; i++)); do
+    echo $(time ./papi_start_time) &>>$1
+done
+
+echo "end - 100 executions" >>$1
+for ((i = 0; i < 100; i++)); do
+    echo $(time ./papi_end_time) &>>$1
+done
+
+echo "close - 100 executions" >>$1
+for ((i = 0; i < 100; i++)); do
+    echo $(time ./papi_close_time) &>>$1
+done
+
+echo "count - 40 executions" >>$1
+for ((i = 0; i < 40; i++)); do
+    echo $(time ./papi_count_time) &>>$1
+done
+
+echo "total - 40 executions" >>$1
+for ((i = 0; i < 40; i++)); do
+    echo $(time ./papi_total_time) &>>$1
+done
+
+#################################################
+echo "### GENERAL TESTS ###" >>$1
+echo "kernel_time - 40 executions" >>$1
+for ((i = 0; i < 40; i++)); do
+    echo $(time ./kernel_time) &>>$1
+done
+
+echo "gettime_time - 100 executions" >>$1
+for ((i = 0; i < 100; i++)); do
+    echo $(time ./gettime_time) &>>$1
+done
