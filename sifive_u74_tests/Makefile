@@ -8,7 +8,7 @@ CC=gcc
 CFLAGS=-Wextra -Wall
 
 # Compiler mode
-MODE=-g
+MODE=-O0
 
 INCLUDE=-I../../papi/include
 PAPILIB=../src/libpapi.a
