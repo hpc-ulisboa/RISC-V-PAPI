@@ -70,12 +70,11 @@ int main(int argc, char **argv)
                 exit(EXIT_FAILURE);
         }
 
-        printf("%lld,", count);
-
         PAPI_shutdown();
 
         clock_gettime(CLOCK_MONOTONIC_RAW, &finish);
         subTimespec(start, finish, &delta);
+        printf("%lld,", count);
         printf("%d.%.9ld\n", (int)delta.tv_sec, delta.tv_nsec);
 
         exit(EXIT_SUCCESS);
