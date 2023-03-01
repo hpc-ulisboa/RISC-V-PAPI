@@ -7,7 +7,8 @@
 #include <time.h>
 
 #include "papi.h"
-#include "blackscholes.h"
+// #include "blackscholes.h"
+#include "gemm.h"
 
 void subTimespec(struct timespec t1, struct timespec t2, struct timespec *td)
 {
@@ -59,7 +60,7 @@ int main(int argc, char **argv)
         // Start counting
         PAPI_start(eventset);
 
-        kernel_blackscholes();
+        kernel_gemm();
 
         // Stop counting and read the count value
         retval = PAPI_stop(eventset, &count);

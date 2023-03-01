@@ -8,7 +8,8 @@
 #include <unistd.h>
 #include <time.h>
 
-#include "blackscholes.h"
+// #include "blackscholes.h"
+#include "gemm.h"
 
 #define READ_BUFFER_SIZE 771
 
@@ -70,7 +71,7 @@ int main(int argc, char **argv)
         exit(EXIT_FAILURE);
     }
 
-    kernel_blackscholes();
+    kernel_gemm();
 
     retval = ioctl(fd, PERF_EVENT_IOC_DISABLE, NULL);
     if (retval == -1)
