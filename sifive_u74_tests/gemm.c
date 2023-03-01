@@ -3,9 +3,9 @@
 
 #include "gemm.h"
 
-#define NI 1000
-#define NJ 1100
-#define NK 1200
+#define NI 650
+#define NJ 700
+#define NK 750
 
 static void init_array(int ni, int nj, int nk, double *alpha, double *beta,
                        double C[NI][NJ], double A[NI][NK], double B[NK][NJ])
