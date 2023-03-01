@@ -15,8 +15,6 @@ void subTimespec(struct timespec t1, struct timespec t2, struct timespec *td)
 int main(int argc, char **argv)
 {
     struct timespec start, finish, delta, dummy_start, dummy_finish;
-    long seconds, microseconds;
-    double elapsed;
 
     clock_gettime(CLOCK_MONOTONIC_RAW, &start);
     clock_gettime(CLOCK_MONOTONIC_RAW, &dummy_start);

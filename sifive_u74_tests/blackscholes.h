@@ -1,4 +1,4 @@
 #ifndef BLACKSCHOLES_H 
 #define BLACKSCHOLES_H 
-void kernel();
+void kernel_blackscholes();
 #endif

@@ -1,7 +1,8 @@
 #include <stdio.h>
 #include <time.h>
 
-#include "blackscholes.h"
+// #include "blackscholes.h"
+#include "gemm.h"
 
 void subTimespec(struct timespec t1, struct timespec t2, struct timespec *td)
 {
@@ -22,7 +23,7 @@ int main(int argc, char **argv)
 
     clock_gettime(CLOCK_MONOTONIC_RAW, &start);
 
-    // kernel();
+    kernel_gemm();
 
     clock_gettime(CLOCK_MONOTONIC_RAW, &finish);
 

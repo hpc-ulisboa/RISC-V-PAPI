@@ -71,7 +71,7 @@ int main(int argc, char **argv)
         exit(EXIT_FAILURE);
     }
 
-    kernel();
+    kernel_blackscholes();
 
     retval = ioctl(fd, PERF_EVENT_IOC_DISABLE, NULL);
     if (retval == -1)

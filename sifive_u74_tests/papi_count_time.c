@@ -59,7 +59,7 @@ int main(int argc, char **argv)
         // Start counting
         PAPI_start(eventset);
 
-        kernel();
+        kernel_blackscholes();
 
         // Stop counting and read the count value
         retval = PAPI_stop(eventset, &count);

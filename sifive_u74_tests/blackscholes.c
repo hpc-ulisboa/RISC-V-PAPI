@@ -251,7 +251,7 @@ int blackscholes()
     return 0;
 }
 
-void kernel()
+void kernel_blackscholes()
 {
     FILE *file;
     int i;
