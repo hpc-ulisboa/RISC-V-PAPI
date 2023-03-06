@@ -8,8 +8,6 @@
 #include <unistd.h>
 #include <time.h>
 
-#include "blackscholes.h"
-
 #define READ_BUFFER_SIZE 771
 
 static long
@@ -40,6 +38,7 @@ int main(int argc, char **argv)
 
     struct timespec start, finish, delta;
 
+    clock_gettime(CLOCK_MONOTONIC_RAW, &start);
     memset(&pe, 0, sizeof(struct perf_event_attr));
     memset(&buffer, 0, READ_BUFFER_SIZE * sizeof(long long));
 
@@ -54,7 +53,11 @@ int main(int argc, char **argv)
         fprintf(stderr, "%s\n", strerror(errno));
         exit(EXIT_FAILURE);
     }
+    clock_gettime(CLOCK_MONOTONIC_RAW, &finish);
+    subTimespec(start, finish, &delta);
+    printf("%d.%.9ld,", (int)delta.tv_sec, delta.tv_nsec);
 
+    clock_gettime(CLOCK_MONOTONIC_RAW, &start);
     retval = ioctl(fd, PERF_EVENT_IOC_RESET, NULL);
     if (retval == -1)
     {
@@ -68,8 +71,9 @@ int main(int argc, char **argv)
         fprintf(stderr, "ioctl(PERF_EVENT_ENABLE) failed");
         exit(EXIT_FAILURE);
     }
-
-    // kernel();
+    clock_gettime(CLOCK_MONOTONIC_RAW, &finish);
+    subTimespec(start, finish, &delta);
+    printf("%d.%.9ld,", (int)delta.tv_sec, delta.tv_nsec);
 
     clock_gettime(CLOCK_MONOTONIC_RAW, &start);
     retval = ioctl(fd, PERF_EVENT_IOC_DISABLE, NULL);
@@ -87,11 +91,12 @@ int main(int argc, char **argv)
         exit(EXIT_FAILURE);
     }
     clock_gettime(CLOCK_MONOTONIC_RAW, &finish);
+    subTimespec(start, finish, &delta);
+    printf("%d.%.9ld,", (int)delta.tv_sec, delta.tv_nsec);
 
-    // printf("%lld\n", buffer[1]);
-
+    clock_gettime(CLOCK_MONOTONIC_RAW, &start);
+    close(fd);
+    clock_gettime(CLOCK_MONOTONIC_RAW, &finish);
     subTimespec(start, finish, &delta);
     printf("%d.%.9ld\n", (int)delta.tv_sec, delta.tv_nsec);
-
-    close(fd);
 }

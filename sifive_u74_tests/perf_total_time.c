@@ -8,7 +8,7 @@
 #include <unistd.h>
 #include <time.h>
 
-#include "blackscholes.h"
+#include "gemm.h"
 
 #define READ_BUFFER_SIZE 771
 
@@ -45,8 +45,8 @@ int main(int argc, char **argv)
     memset(&pe, 0, sizeof(struct perf_event_attr));
     memset(&buffer, 0, READ_BUFFER_SIZE * sizeof(long long));
 
-    pe.type = PERF_TYPE_HARDWARE;
-    pe.config = PERF_COUNT_HW_CPU_CYCLES;
+    pe.type = atoi(argv[4]);
+    pe.config = atoi(argv[5]);
     pe.read_format = 8;
 
     fd = perf_event_open(&pe, 0, -1, -1, 0);
@@ -71,7 +71,7 @@ int main(int argc, char **argv)
         exit(EXIT_FAILURE);
     }
 
-    kernel_blackscholes();
+    kernel_gemm(atoi(argv[1]), atoi(argv[2]), atoi(argv[3]));
 
     retval = ioctl(fd, PERF_EVENT_IOC_DISABLE, NULL);
     if (retval == -1)
@@ -94,4 +94,6 @@ int main(int argc, char **argv)
     subTimespec(start, finish, &delta);
     printf("%lld,", buffer[1]);
     printf("%d.%.9ld\n", (int)delta.tv_sec, delta.tv_nsec);
+
+    exit(EXIT_SUCCESS);
 }

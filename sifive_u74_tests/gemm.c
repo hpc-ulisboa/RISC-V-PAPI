@@ -3,12 +3,12 @@
 
 #include "gemm.h"
 
-#define NI 650
-#define NJ 700
-#define NK 750
+// #define NI 650
+// #define NJ 700
+// #define NK 750
 
 static void init_array(int ni, int nj, int nk, double *alpha, double *beta,
-                       double C[NI][NJ], double A[NI][NK], double B[NK][NJ])
+                       double C[ni][nj], double A[ni][nk], double B[nk][nj])
 {
     int i, j;
 
@@ -26,7 +26,7 @@ static void init_array(int ni, int nj, int nk, double *alpha, double *beta,
 }
 
 static void kernel_gemm_priv(int ni, int nj, int nk, double alpha, double beta,
-                        double C[NI][NJ], double A[NI][NK], double B[NK][NJ])
+                        double C[ni][nj], double A[ni][nk], double B[nk][nj])
 {
     int i, j, k;
 
@@ -58,12 +58,12 @@ static void *polybench_alloc(unsigned long long int n, int size)
     return ret;
 }
 
-void kernel_gemm()
+void kernel_gemm(int ni, int nj, int nk)
 {
     /* Retrieve problem size. */
-    int ni = NI;
-    int nj = NJ;
-    int nk = NK;
+    // int ni = NI;
+    // int nj = NJ;
+    // int nk = NK;
 
     /* Variable declaration/allocation. */
     double alpha;

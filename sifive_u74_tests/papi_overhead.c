@@ -7,7 +7,6 @@
 #include <time.h>
 
 #include "papi.h"
-#include "blackscholes.h"
 
 void subTimespec(struct timespec t1, struct timespec t2, struct timespec *td)
 {
@@ -27,6 +26,7 @@ int main(int argc, char **argv)
         long long count;
         struct timespec start, finish, delta;
 
+        clock_gettime(CLOCK_MONOTONIC_RAW, &start);
         // Initialize PAPI library
         retval = PAPI_library_init(PAPI_VER_CURRENT);
         if (retval != PAPI_VER_CURRENT)
@@ -34,6 +34,9 @@ int main(int argc, char **argv)
                 fprintf(stderr, "PAPI library init failed\n");
                 exit(EXIT_FAILURE);
         }
+        clock_gettime(CLOCK_MONOTONIC_RAW, &finish);
+        subTimespec(start, finish, &delta);
+        printf("%d.%.9ld,", (int)delta.tv_sec, delta.tv_nsec);
 
         clock_gettime(CLOCK_MONOTONIC_RAW, &start);
         // Create an eventset
@@ -58,9 +61,10 @@ int main(int argc, char **argv)
         // Start counting
         PAPI_start(eventset);
         clock_gettime(CLOCK_MONOTONIC_RAW, &finish);
+        subTimespec(start, finish, &delta);
+        printf("%d.%.9ld,", (int)delta.tv_sec, delta.tv_nsec);
 
-        // kernel();
-
+        clock_gettime(CLOCK_MONOTONIC_RAW, &start);
         // Stop counting and read the count value
         retval = PAPI_stop(eventset, &count);
 
@@ -69,13 +73,15 @@ int main(int argc, char **argv)
                 fprintf(stderr, "Failed to read %s count\n", "PAPI_TOT_CYC");
                 exit(EXIT_FAILURE);
         }
+        clock_gettime(CLOCK_MONOTONIC_RAW, &finish);
+        subTimespec(start, finish, &delta);
+        printf("%d.%.9ld,", (int)delta.tv_sec, delta.tv_nsec);
 
-        // printf("%lld\n", count);
-
+        clock_gettime(CLOCK_MONOTONIC_RAW, &start);
+        PAPI_shutdown();
+        clock_gettime(CLOCK_MONOTONIC_RAW, &finish);
         subTimespec(start, finish, &delta);
         printf("%d.%.9ld\n", (int)delta.tv_sec, delta.tv_nsec);
-
-        PAPI_shutdown();
 
         exit(EXIT_SUCCESS);
 }

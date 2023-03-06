@@ -7,7 +7,7 @@
 #include <time.h>
 
 #include "papi.h"
-#include "blackscholes.h"
+#include "gemm.h"
 
 void subTimespec(struct timespec t1, struct timespec t2, struct timespec *td)
 {
@@ -46,10 +46,10 @@ int main(int argc, char **argv)
         }
 
         // Add event from event list
-        retval = PAPI_add_named_event(eventset, "PAPI_TOT_CYC");
+        retval = PAPI_add_named_event(eventset, argv[4]);
         if (retval != PAPI_OK)
         {
-                fprintf(stderr, "Faield to add %s to eventset\n", "PAPI_TOT_CYC");
+                fprintf(stderr, "Faield to add %s to eventset\n", argv[4]);
                 exit(EXIT_FAILURE);
         }
 
@@ -59,14 +59,14 @@ int main(int argc, char **argv)
         // Start counting
         PAPI_start(eventset);
 
-        kernel_blackscholes();
+        kernel_gemm(atoi(argv[1]), atoi(argv[2]), atoi(argv[3]));
 
         // Stop counting and read the count value
         retval = PAPI_stop(eventset, &count);
 
         if (retval != PAPI_OK)
         {
-                fprintf(stderr, "Failed to read %s count\n", "PAPI_TOT_CYC");
+                fprintf(stderr, "Failed to read %s count\n", argv[4]);
                 exit(EXIT_FAILURE);
         }
 
