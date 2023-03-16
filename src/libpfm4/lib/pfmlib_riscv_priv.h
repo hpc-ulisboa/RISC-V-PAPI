@@ -26,7 +26,7 @@ typedef struct {
 
 #define RISCV_PLM (0x0)
 
-extern pfm_riscv_cfg_t pfm_riscv_cfg;
+extern pfm_riscv_config_t pfm_riscv_cfg;
 
 extern int pfm_riscv_get_perf_encoding(void *this, pfmlib_event_desc_t *e);
 extern int pfm_riscv_detect(void *this);
