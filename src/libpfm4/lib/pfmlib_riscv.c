@@ -3,6 +3,8 @@
  *
  */
 
+#include <stdlib.h>
+
 /* private headers */
 #include "pfmlib_priv.h" /* library private */
 #include "pfmlib_riscv_priv.h"
