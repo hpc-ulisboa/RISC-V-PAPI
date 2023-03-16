@@ -27,5 +27,13 @@ typedef struct {
 #define RISCV_PLM (0x0)
 
 extern int pfm_riscv_get_perf_encoding(void *this, pfmlib_event_desc_t *e);
+extern int pfm_riscv_detect(void *this);
+extern int pfm_riscv_get_encoding(void *this, pfmlib_event_desc_t *e);
+extern int pfm_riscv_get_event_first(void *this);
+extern int pfm_riscv_get_event_next(void *this, int idx);
+extern int pfm_riscv_event_is_valid(void *this, int pidx);
+extern int pfm_riscv_validate_table(void *this, FILE *fp);
+extern int pfm_riscv_get_event_info(void *this, int idx, pfm_event_info_t *info);
+
 
 #endif /* __PFMLIB_RISCV_PRIV_H__ */

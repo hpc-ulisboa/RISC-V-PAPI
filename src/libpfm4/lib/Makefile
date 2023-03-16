@@ -221,7 +221,7 @@ SRCS += pfmlib_riscv_perf_event.c
 endif
 
 INCARCH = $(INC_RISCV)
-SRCS += pfmlib_riscv.c
+SRCS += pfmlib_riscv.c pfmlib_riscv_sifive_u74.c
 CFLAGS += -DCONFIG_PFMLIB_ARCH_RISCV
 endif
 
