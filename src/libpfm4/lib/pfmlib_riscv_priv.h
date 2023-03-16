@@ -16,6 +16,14 @@ typedef union pfm_riscv_reg
     unsigned int val;
 } pfm_riscv_reg_t;
 
+typedef enum {
+    SIFIVE_U74_MC   // SiFive U74-MC Core
+} pfm_riscv_architecture_t;
+
+typedef struct {
+    pfm_riscv_architecture_t architecture;
+} pfm_riscv_config_t;
+
 #define RISCV_PLM (0x0)
 
 extern int pfm_riscv_get_perf_encoding(void *this, pfmlib_event_desc_t *e);

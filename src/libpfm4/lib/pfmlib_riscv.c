@@ -9,9 +9,107 @@
 
 #include "events/riscv_sifive_u74_events.h" /* SiFive U74 event tables */
 
+pfm_riscv_config_t pfm_riscv_cfg;
+
+#ifdef CONFIG_PFMLIB_OS_LINUX
+/*
+ * helper function to retrieve one value from /proc/cpuinfo
+ * for internal libpfm use only
+ * attr: the attribute (line) to look for
+ * ret_buf: a buffer to store the value of the attribute (as a string)
+ * maxlen : number of bytes of capacity in ret_buf
+ *
+ * ret_buf is null terminated.
+ *
+ * Return:
+ * 	0 : attribute found, ret_buf populated
+ * 	-1: attribute not found
+ */
+
+static int
+pfmlib_getcpuinfo_attr(const char *attr, char *ret_buf, size_t maxlen)
+{
+	FILE *fp = NULL;
+	int ret = -1;
+	size_t attr_len, buf_len = 0;
+	char *p, *value = NULL;
+	char *buffer = NULL;
+
+	if (attr == NULL || ret_buf == NULL || maxlen < 1)
+		return -1;
+
+	attr_len = strlen(attr);
+
+	fp = fopen("/proc/cpuinfo", "r");
+	if (fp == NULL)
+		return -1;
+
+	while(pfmlib_getl(&buffer, &buf_len, fp) != -1){
+
+		/* skip  blank lines */
+		if (*buffer == '\n')
+			continue;
+
+		p = strchr(buffer, ':');
+		if (p == NULL)
+			goto error;
+
+		/*
+		 * p+2: +1 = space, +2= firt character
+		 * strlen()-1 gets rid of \n
+		 */
+		*p = '\0';
+		value = p+2;
+
+		value[strlen(value)-1] = '\0';
+
+		if (!strncmp(attr, buffer, attr_len))
+			break;
+	}
+	strncpy(ret_buf, value, maxlen-1);
+	ret_buf[maxlen-1] = '\0';
+	ret = 0;
+error:
+	free(buffer);
+	fclose(fp);
+	return ret;
+}
+#else
+static int
+pfmlib_getcpuinfo_attr(const char *attr, char *ret_buf, size_t maxlen)
+{
+	return -1;
+}
+#endif
+
+int pfm_riscv_detect(void *this)
+{
+    int ret;
+    char buffer[128];
+
+    ret = pfmlib_getcpuinfo_attr("uarch", buffer, sizeof(buffer));
+    if (ret == -1)
+        return PFM_ERR_NOTSUPP;
+    if (strcmp(buffer, "sifive,u74-mc") == 0)
+        pfm_riscv_cfg.architecture = SIFIVE_U74_MC;
+    else
+        return PFM_ERR_NOTSUPP;
+
+    return PFM_SUCCESS;
+}
+
 static int pfm_riscv_detect_sifive_u74(void *this)
 {
-    return PFM_SUCCESS; // TODO_RISCV:
+    int ret;
+
+    ret = pfm_riscv_detect(this);
+    if (ret != PFM_SUCCESS)
+        return PFM_ERR_NOTSUPP;
+    
+    if (pfm_riscv_cfg.architecture == SIFIVE_U74_MC)
+        return PFM_SUCCESS;
+
+    return PFM_ERR_NOTSUPP;
 }
 
 static void pfm_riscv_display_reg(void *this, pfmlib_event_desc_t *e, pfm_riscv_reg_t reg)
