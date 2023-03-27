@@ -1,4 +1,26 @@
 /*
+ * Copyright (c) 2023 INESC-ID, Instituto Superior Técnico, Universidade de Lisboa
+ * Changed by Tiago Rocha <tiagolopesrocha@tecnico.ulisboa.pt>
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+ * of the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+ * PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+ * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
+ * OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
+/*
 * File:    perf_event.c
 *
 * Author:  Corey Ashford
@@ -160,6 +182,12 @@ pe_vendor_fixups(papi_vector_t *vector)
 	/* CRAY */
 	if ( _papi_hwi_system_info.hw_info.vendor == PAPI_VENDOR_CRAY ) {
 		vector->cmp_info.available_domains |= PAPI_DOM_OTHER;
+	}
+
+	/* RISC-V*/
+	if (_papi_hwi_system_info.hw_info.vendor == PAPI_VENDOR_RISCV_SIFIVE) {
+		vector->cmp_info.available_domains = PAPI_DOM_USER | PAPI_DOM_KERNEL | PAPI_DOM_SUPERVISOR;
+		vector->cmp_info.default_domain = PAPI_DOM_USER | PAPI_DOM_KERNEL | PAPI_DOM_SUPERVISOR;
 	}
 
 	return PAPI_OK;

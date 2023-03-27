@@ -1,4 +1,26 @@
 #
+# Copyright (c) 2023 INESC-ID, Instituto Superior Técnico, Universidade de Lisboa
+# Changed by Tiago Rocha <tiagolopesrocha@tecnico.ulisboa.pt>
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy 
+# of this software and associated documentation files (the "Software"), to deal 
+# in the Software without restriction, including without limitation the rights 
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies 
+# of the Software, and to permit persons to whom the Software is furnished to do so, 
+# subject to the following conditions:
+# 
+# The above copyright notice and this permission notice shall be included in all 
+# copies or substantial portions of the Software.  
+# 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
+# INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A 
+# PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT 
+# HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF 
+# CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE 
+# OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+#
+
+#
 # Copyright (c) 2002-2006 Hewlett-Packard Development Company, L.P.
 # Contributed by Stephane Eranian <eranian@hpl.hp.com>
 #
@@ -214,6 +236,17 @@ INCARCH = $(INC_CELL)
 CFLAGS += -DCONFIG_PFMLIB_CELL
 endif
 
+ifeq ($(CONFIG_PFMLIB_ARCH_RISCV),y)
+
+ifeq ($(SYS),Linux)
+SRCS += pfmlib_riscv_perf_event.c
+endif
+
+INCARCH = $(INC_RISCV)
+SRCS += pfmlib_riscv.c pfmlib_riscv_sifive_u74.c
+CFLAGS += -DCONFIG_PFMLIB_ARCH_RISCV
+endif
+
 ifeq ($(SYS),Linux)
 SLDFLAGS=$(LDFLAGS) -shared -Wl,-soname -Wl,$(VLIBPFM)
 SLIBPFM=libpfm.so.$(VERSION).$(REVISION).$(AGE)
@@ -386,6 +419,9 @@ INC_ARM64=pfmlib_arm_priv.h			\
 	events/arm_neoverse_n2_events.h		\
 	events/arm_hisilicon_kunpeng_events.h \
 	events/arm_hisilicon_kunpeng_unc_events.h
+
+INC_RISCV=pfmlib_riscv_priv.h \
+	events/riscv_sifive_u74_events.h
 
 INCDEP=$(INC_COMMON) $(INCARCH)
 

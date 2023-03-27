@@ -1,4 +1,26 @@
 /*
+ * Copyright (c) 2023 INESC-ID, Instituto Superior Técnico, Universidade de Lisboa
+ * Changed by Tiago Rocha <tiagolopesrocha@tecnico.ulisboa.pt>
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+ * of the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+ * PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+ * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
+ * OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
+/*
 * File:    linux-common.c
 */
 
@@ -134,6 +156,8 @@ decode_vendor_string( char *s, int *vendor )
 		*vendor = PAPI_VENDOR_MIPS;
 	else if ( strcasecmp( s, "SiCortex" ) == 0 )
 		*vendor = PAPI_VENDOR_MIPS;
+	else if ( strcasecmp( s, "RISCV_SIFIVE" ) == 0)
+		*vendor = PAPI_VENDOR_RISCV_SIFIVE;
 	else
 		*vendor = PAPI_VENDOR_UNKNOWN;
 }
@@ -456,6 +480,20 @@ _linux_get_cpu_info( PAPI_hw_info_t *hwinfo, int *cpuinfo_mhz )
 							break;
 						default:
 							strcpy( hwinfo->vendor_string, "ARM_UNKNOWN" );
+						}
+					}
+					else {
+						/* "uarch" indicates RISC-V */
+						s = search_cpu_info(f, "uarch");
+						if (s)
+						{
+							char *v;
+							v = strtok(s, ",");
+							if (v)
+							{
+								if ((strcasecmp(v, "sifive") == 0))
+									strcpy(hwinfo->vendor_string, "RISCV_SIFIVE");
+							}
 						}
 					}
 				}
