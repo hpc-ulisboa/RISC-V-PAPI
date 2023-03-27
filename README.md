@@ -1,3 +1,6 @@
+# RISC-V-PAPI
+PAPI support for RISC-V events
+
 **[PAPI: The Performance Application Programming Interface](https://icl.utk.edu/exa-papi/)**
 
 **[Innovative Computing Laboratory (ICL)](http://www.icl.utk.edu/)**
