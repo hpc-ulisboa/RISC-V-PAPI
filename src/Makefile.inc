@@ -243,7 +243,7 @@ validation_tests:	$(LIBS) testlib
 ctests: $(LIBS) testlib validation_tests
 	$(SETPATH) $(MAKE) -C ctests
 
-#ftests: $(LIBS) testlib //TODO_RISCV: Uncomment this before release version if possible
+#ftests: $(LIBS) testlib // Line was commented due to the implementation of the OS used for testing the RISC-V port not having the necessary Fortran libraries to compile Fortran tests
 #	$(SETPATH) $(MAKE) -C ftests
 
 

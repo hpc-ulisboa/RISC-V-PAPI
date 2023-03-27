@@ -31,7 +31,7 @@ pfmlib_pmu_t riscv_sifive_u74_support = {
     .supported_plm = RISCV_PLM,
     .pe = riscv_sifive_u74_pe,
     .pmu_detect = pfm_riscv_detect_sifive_u74,
-    .num_cntrs = 2, // TODO_RISCV: check if this should not be 4
+    .num_cntrs = 2,
     .num_fixed_cntrs = 2,
     .max_encoding = 1,
 
