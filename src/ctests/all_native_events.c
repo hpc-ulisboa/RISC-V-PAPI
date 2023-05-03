@@ -106,9 +106,16 @@ main( int argc, char **argv )
 
 	numcmp = PAPI_num_components(  );
 
+    int rocm_id = PAPI_get_component_index("rocm");
+
 	/* Loop through all components */
 	for( cid = 0; cid < numcmp; cid++ ) {
 
+        if (cid == rocm_id) {
+            /* skip rocm component due to a bug in rocprofiler that
+             * crashes PAPI if multiple GPUs are present */
+            continue;
+        }
 
 		cmpinfo = PAPI_get_component_info( cid );
 		if (cmpinfo  == NULL) {
@@ -116,7 +123,7 @@ main( int argc, char **argv )
 		}
 
 		/* Skip disabled components */
-		if (cmpinfo->disabled) {
+		if (cmpinfo->disabled != PAPI_OK && cmpinfo->disabled != PAPI_EDELAY_INIT) {
 			if (!quiet) {
 				printf( "Name:   %-23s %s\n",
 					cmpinfo->name ,cmpinfo->description);
@@ -133,6 +140,13 @@ main( int argc, char **argv )
 
 		do {
 			retval = PAPI_get_event_info( i, &info );
+			event_code = ( int ) info.event_code;
+			if ( check_event( event_code, info.symbol, quiet ) == PAPI_OK) {
+				add_count++;
+			}
+			else {
+				err_count++;
+			}
 
 			/* We used to skip OFFCORE and UNCORE events  */
 			/* Why? */
@@ -150,15 +164,6 @@ main( int argc, char **argv )
 		   err_count++;
 		}
 	     } while ( PAPI_enum_cmp_event( &k, PAPI_NTV_ENUM_UMASKS, cid ) == PAPI_OK );
-	  } else {
-	    /* Event didn't have any umasks */
-	    event_code = ( int ) info.event_code;
-	    if ( check_event( event_code, info.symbol, quiet ) == PAPI_OK) {
-	       add_count++;
-	    }
-	    else {
-	       err_count++;
-	    }
 	  }
 
        } while ( PAPI_enum_cmp_event( &i, PAPI_ENUM_EVENTS, cid ) == PAPI_OK );

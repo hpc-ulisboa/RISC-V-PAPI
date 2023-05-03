@@ -24,6 +24,9 @@
 # Copyright (c) 2002-2006 Hewlett-Packard Development Company, L.P.
 # Contributed by Stephane Eranian <eranian@hpl.hp.com>
 #
+# Copyright (c) 2022, NVIDIA CORPORATION & AFFILIATES.
+# Contributed by John Linford <jlinford@nvidia.com>
+#
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
@@ -171,7 +174,9 @@ SRCS += pfmlib_powerpc_perf_event.c
 endif
 
 INCARCH = $(INC_POWERPC)
-SRCS   += pfmlib_powerpc.c pfmlib_power4.c pfmlib_ppc970.c pfmlib_power5.c pfmlib_power6.c pfmlib_power7.c pfmlib_torrent.c pfmlib_power8.c pfmlib_power9.c pfmlib_powerpc_nest.c
+SRCS   += pfmlib_powerpc.c pfmlib_power4.c pfmlib_ppc970.c pfmlib_power5.c \
+	pfmlib_power6.c pfmlib_power7.c pfmlib_torrent.c pfmlib_power8.c \
+	pfmlib_power9.c pfmlib_powerpc_nest.c pfmlib_power10.c
 CFLAGS += -DCONFIG_PFMLIB_ARCH_POWERPC
 endif
 
@@ -204,7 +209,7 @@ SRCS += pfmlib_arm_perf_event.c
 endif
 
 INCARCH = $(INC_ARM)
-SRCS   += pfmlib_arm.c pfmlib_arm_armv7_pmuv1.c pfmlib_arm_armv6.c pfmlib_arm_armv8.c pfmlib_tx2_unc_perf_event.c pfmlib_kunpeng_unc_perf_event.c
+SRCS   += pfmlib_arm.c pfmlib_arm_armv7_pmuv1.c pfmlib_arm_armv6.c pfmlib_arm_armv8.c pfmlib_arm_armv9.c pfmlib_tx2_unc_perf_event.c pfmlib_kunpeng_unc_perf_event.c
 CFLAGS += -DCONFIG_PFMLIB_ARCH_ARM
 endif
 
@@ -215,7 +220,7 @@ SRCS += pfmlib_arm_perf_event.c
 endif
 
 INCARCH = $(INC_ARM64)
-SRCS   += pfmlib_arm.c pfmlib_arm_armv8.c pfmlib_tx2_unc_perf_event.c pfmlib_kunpeng_unc_perf_event.c
+SRCS   += pfmlib_arm.c pfmlib_arm_armv8.c pfmlib_arm_armv9.c pfmlib_tx2_unc_perf_event.c pfmlib_kunpeng_unc_perf_event.c
 CFLAGS += -DCONFIG_PFMLIB_ARCH_ARM64
 endif
 
@@ -289,6 +294,7 @@ INC_X86= pfmlib_intel_x86_priv.h	\
 	events/amd64_events_fam17h_zen1.h \
 	events/amd64_events_fam17h_zen2.h \
 	events/amd64_events_fam19h_zen3.h \
+	events/amd64_events_fam19h_zen4.h \
 	events/amd64_events_fam19h_zen3_l3.h \
 	events/amd64_events_fam16h.h	\
 	events/intel_p6_events.h	\
@@ -377,6 +383,7 @@ INC_POWERPC=events/ppc970_events.h	\
 	events/power7_events.h		\
 	events/power8_events.h		\
 	events/power9_events.h		\
+	events/power10_events.h		\
 	events/torrent_events.h		\
 	events/powerpc_nest_events.h
 
@@ -405,6 +412,8 @@ INC_ARM=pfmlib_arm_priv.h			\
 	events/arm_marvell_tx2_unc_events.h	\
 	events/arm_neoverse_n1_events.h		\
 	events/arm_neoverse_n2_events.h		\
+	events/arm_neoverse_v1_events.h		\
+	events/arm_neoverse_v2_events.h		\
 	events/arm_hisilicon_kunpeng_events.h \
 	events/arm_hisilicon_kunpeng_unc_events.h
 
@@ -417,6 +426,8 @@ INC_ARM64=pfmlib_arm_priv.h			\
 	events/arm_fujitsu_a64fx_events.h	\
 	events/arm_neoverse_n1_events.h		\
 	events/arm_neoverse_n2_events.h		\
+	events/arm_neoverse_v1_events.h		\
+	events/arm_neoverse_v2_events.h		\
 	events/arm_hisilicon_kunpeng_events.h \
 	events/arm_hisilicon_kunpeng_unc_events.h
 

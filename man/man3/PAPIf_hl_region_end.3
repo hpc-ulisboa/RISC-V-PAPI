@@ -1,4 +1,4 @@
-.TH "PAPIf_hl_region_end" 3 "Thu Feb 27 2020" "Version 6.0.0.0" "PAPI" \" -*- nroff -*-
+.TH "PAPIf_hl_region_end" 3 "Fri Mar 10 2023" "Version 7.0.1.0" "PAPI" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -17,7 +17,7 @@ Reads and stores hardware events at the end of an instrumented code region\&.
 .RS 4
 #include 'fpapi\&.h' 
 .br
- \fBPAPIf_hl_region_end( C_STRING region, C_INT check )\fP
+\fBPAPIf_hl_region_end( C_STRING region, C_INT check )\fP
 .RE
 .PP
 \fBParameters:\fP
@@ -47,21 +47,19 @@ Reads and stores hardware events at the end of an instrumented code region\&.
 .PP
 .PP
 .nf
-* integer retval
-*
-* call PAPIf_hl_region_begin("computation", retval)
-* if ( retval \&.NE\&. PAPI_OK ) then
-*     write (*,*) "PAPIf_hl_region_begin failed!"
-* end if
-*
-* !do some computation here
-*
-* call PAPIf_hl_region_end("computation", retval)
-* if ( retval \&.NE\&. PAPI_OK ) then
-*     write (*,*) "PAPIf_hl_region_end failed!"
-* end if
-*
-* 
+integer retval
+
+call PAPIf_hl_region_begin("computation", retval)
+if ( retval \&.NE\&. PAPI_OK ) then
+    write (*,*) "PAPIf_hl_region_begin failed!"
+end if
+
+!do some computation here
+
+call PAPIf_hl_region_end("computation", retval)
+if ( retval \&.NE\&. PAPI_OK ) then
+    write (*,*) "PAPIf_hl_region_end failed!"
+end if
 .fi
 .PP
 .PP

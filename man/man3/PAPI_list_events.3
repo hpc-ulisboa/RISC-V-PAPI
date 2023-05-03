@@ -1,4 +1,4 @@
-.TH "PAPI_list_events" 3 "Thu Feb 27 2020" "Version 6.0.0.0" "PAPI" \" -*- nroff -*-
+.TH "PAPI_list_events" 3 "Fri Mar 10 2023" "Version 7.0.1.0" "PAPI" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -13,18 +13,13 @@ list the events in an event set
 .PP 
 List the events in an event set\&.
 .PP
-.PP
-.nf
-PAPI_list_events() returns an array of events and a count of the
-.fi
-.PP
- total number of events in an event set\&. This call assumes an initialized PAPI library and a successfully created event set\&.
+\fBPAPI_list_events()\fP returns an array of events and a count of the total number of events in an event set\&. This call assumes an initialized PAPI library and a successfully created event set\&.
 .PP
 \fBC Interface\fP
 .RS 4
 #include <\fBpapi\&.h\fP> 
 .br
- int \fBPAPI_list_events(int *EventSet, int *Events, int *number )\fP;
+int \fBPAPI_list_events(int *EventSet, int *Events, int *number )\fP;
 .RE
 .PP
 \fBParameters:\fP
@@ -48,23 +43,22 @@ PAPI_list_events() returns an array of events and a count of the
 
 .PP
 .nf
-        if (PAPI_event_name_to_code("PAPI_TOT_INS",&EventCode) != PAPI_OK)
-        exit(1);
-        if (PAPI_add_event(EventSet, EventCode) != PAPI_OK)
-        exit(1);
-        Convert a second event name to an event code 
-        if (PAPI_event_name_to_code("PAPI_L1_LDM",&EventCode) != PAPI_OK)
-        exit(1);
-        if (PAPI_add_event(EventSet, EventCode) != PAPI_OK)
-        exit(1);
-        number = 0;
-        if(PAPI_list_events(EventSet, NULL, &number))
-        exit(1);
-        if(number != 2)
-        exit(1);
-        if(PAPI_list_events(EventSet, Events, &number))
-        exit(1);
-*   
+if (PAPI_event_name_to_code("PAPI_TOT_INS",&EventCode) != PAPI_OK)
+exit(1);
+if (PAPI_add_event(EventSet, EventCode) != PAPI_OK)
+exit(1);
+Convert a second event name to an event code 
+if (PAPI_event_name_to_code("PAPI_L1_LDM",&EventCode) != PAPI_OK)
+exit(1);
+if (PAPI_add_event(EventSet, EventCode) != PAPI_OK)
+exit(1);
+number = 0;
+if(PAPI_list_events(EventSet, NULL, &number))
+exit(1);
+if(number != 2)
+exit(1);
+if(PAPI_list_events(EventSet, Events, &number))
+exit(1);
 
 .fi
 .PP

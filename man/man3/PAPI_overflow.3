@@ -1,4 +1,4 @@
-.TH "PAPI_overflow" 3 "Thu Feb 27 2020" "Version 6.0.0.0" "PAPI" \" -*- nroff -*-
+.TH "PAPI_overflow" 3 "Fri Mar 10 2023" "Version 7.0.1.0" "PAPI" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -21,11 +21,11 @@ _papi_overflow_handler() is a placeholder for a user-defined function to process
 .RS 4
 #include <\fBpapi\&.h\fP> 
 .br
- int \fBPAPI_overflow\fP (int EventSet, int EventCode, int threshold, int flags, PAPI_overflow_handler_t handler ); 
+int \fBPAPI_overflow\fP (int EventSet, int EventCode, int threshold, int flags, PAPI_overflow_handler_t handler ); 
 .br
 
 .br
- (*PAPI_overflow_handler_t) _papi_overflow_handler (int EventSet, void *address, long_long overflow_vector, void *context );
+(*PAPI_overflow_handler_t) _papi_overflow_handler (int EventSet, void *address, long_long overflow_vector, void *context );
 .RE
 .PP
 \fBFortran Interface:\fP
@@ -74,17 +74,16 @@ Not implemented
 
 .PP
 .nf
-* // Define a simple overflow handler:
-* void handler(int EventSet, void *address, long_long overflow_vector, void *context)
-* {
-*    fprintf(stderr,\"Overflow at %p! bit=%#llx \\n\",
-*             address,overflow_vector);
-* }
-*
-* // Call PAPI_overflow for an EventSet containing PAPI_TOT_INS,
-* // setting the threshold to 100000\&. Use the handler defined above\&.
-* retval = PAPI_overflow(EventSet, PAPI_TOT_INS, 100000, 0, handler);
-* 
+// Define a simple overflow handler:
+void handler(int EventSet, void *address, long_long overflow_vector, void *context)
+{
+   fprintf(stderr,\"Overflow at %p! bit=%#llx \\n\",
+            address,overflow_vector);
+}
+
+// Call PAPI_overflow for an EventSet containing PAPI_TOT_INS,
+// setting the threshold to 100000\&. Use the handler defined above\&.
+retval = PAPI_overflow(EventSet, PAPI_TOT_INS, 100000, 0, handler);
 
 .fi
 .PP

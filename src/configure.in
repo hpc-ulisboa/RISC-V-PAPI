@@ -6,7 +6,7 @@
 # cross compiling should work differently...
 
 AC_PREREQ(2.59)
-AC_INIT(PAPI, 6.0.0.1, ptools-perfapi@icl.utk.edu)
+AC_INIT(PAPI, 7.0.1.0, ptools-perfapi@icl.utk.edu)
 AC_CONFIG_SRCDIR([papi.c])
 AC_CONFIG_HEADER([config.h])
 
@@ -391,7 +391,6 @@ else
   fi
 fi
 
-
 AC_MSG_CHECKING(for debug build)
 AC_ARG_WITH(debug,
             [AS_HELP_STRING([--with-debug=<yes,memory,no>],
@@ -444,7 +443,7 @@ AC_ARG_WITH(CPU,
             [Specify CPU type])],
             [CPU=$withval
              case "$CPU" in
-               core|core2|i7|atom|p4|p3|opteron|athlon)
+               core|core2|i7|atom|p4|p3|opteron|athlon|x86)
                    MISCSRCS="$MISCSRCS x86_cpuid_info.c" 
              esac],
 	        [case "$OS" in
@@ -484,15 +483,25 @@ AC_ARG_WITH(CPU,
                       MISCSRCS="$MISCSRCS x86_cpuid_info.c" 
 		      CPU="x86"
 
-                   elif test "$family" = "ppc64"; then
-                     CPU_info="`cat /proc/cpuinfo | grep cpu | cut -d: -f2 | cut -d' ' -f2 | sed '2,$d'`"
+                   elif test "$family" = "ppc64" || test "$family" = "ppc64le"; then
+                     cuda_version=`grep -r '#define CUDA_VERSION [0-9]' $PAPI_CUDA_ROOT/include/cuda.h | awk '{print $3}'`
+                     if (test "$family" = "ppc64le" && test "$CC_COMMON_NAME" = "gcc" && test "$major" -ge 8 \
+                      && test "$major" -lt 9 && test "$cuda_version" -ge 10000 && test "$cuda_version" -lt 11000); then
+                        NVPPC64LEFLAGS="-Xcompiler -mno-float128"
+                     fi
+                     CPU_info="`cat /proc/cpuinfo | grep cpu | cut -d: -f2 | cut -d' ' -f2 | sed '2,$d' | tr -d ","`"
                      case "$CPU_info" in
                        PPC970*) CPU="PPC970";;
                        POWER5)  CPU="POWER5";;
                        POWER5+) CPU="POWER5+";;
                        POWER6)  CPU="POWER6";;
                        POWER7)  CPU="POWER7";;
+                       POWER8)  CPU="POWER8";;
+                       POWER9)  CPU="POWER9";;
+                       POWER10) CPU="POWER10";;
                      esac
+           elif test "${family:0:3}" = "arm" || test "$family" = "aarch64"; then
+              CPU="arm"
 	           fi ;;
                solaris)
                  AC_CHECK_HEADER([libcpc.h],
@@ -573,14 +582,16 @@ fi
 
 AC_MSG_CHECKING(for working gettid)
 AC_LINK_IFELSE([AC_LANG_SOURCE([#include <sys/types.h>
-                main() { pid_t a = gettid(); }])],
+                #include <unistd.h>
+                int main() { pid_t a = gettid(); }])],
                [AC_MSG_RESULT(yes)
                 AC_DEFINE(HAVE_GETTID, 1, [Full gettid function])],
                [AC_MSG_RESULT(no)
                 AC_MSG_CHECKING(for working syscall(SYS_gettid))
                 AC_LINK_IFELSE([AC_LANG_SOURCE([#include <sys/types.h>
                                 #include <sys/syscall.h>
-                                main() { pid_t a = syscall(SYS_gettid); }])],
+                                #include <unistd.h>
+                                int main() { pid_t a = syscall(SYS_gettid); }])],
                                [AC_MSG_RESULT(yes)
                                 AC_DEFINE(HAVE_SYSCALL_GETTID, 1, [gettid syscall function])],
                                [AC_MSG_RESULT(no)]) ])
@@ -621,7 +632,7 @@ AC_ARG_WITH(walltimer,
                                      #include <stdio.h>
                                      #include <time.h>
                                      #include <syscall.h>
-                                     main() {
+                                     int main() {
                                        struct timespec t1, t2;
                                        double seconds;
                                        if (syscall(__NR_clock_gettime,CLOCK_REALTIME_HR,&t1) == -1) exit(1);
@@ -642,7 +653,7 @@ AC_ARG_WITH(walltimer,
                                                  #include <stdio.h>
                                                  #include <time.h>
                                                  #include <syscall.h>
-                                                 main() {
+                                                 int main() {
                                                    struct timespec t1, t2;
                                                    double seconds;
                                                    if (syscall(__NR_clock_gettime,CLOCK_REALTIME,&t1) == -1) exit(1);
@@ -722,15 +733,15 @@ AC_ARG_WITH(tls,
                  if test "x$tls" = "x__thread"; then
                    # On some linux distributions, TLS works in executables, but linking against
                    # a shared library containing TLS fails with: undefined reference to `__tls_get_addr'
-                   rm -f conftest.c conftest.so conftest
-                   echo "static __thread int foo; void main () { foo = 5; }" > conftest.c
-                   gcc -fPIC --shared -o conftest.so conftest.c > /dev/null 2>&1
-                   gcc -o conftest conftest.so > /dev/null 2>&1
-                     if test ! -f conftest; then
-                       AC_MSG_WARN([Disabling usage of __thread.]);
-                       tls="no"
-                     fi
-                   rm -f conftest.c conftest.so conftest
+                   AC_LINK_IFELSE([AC_LANG_SOURCE([
+                                                    static __thread int foo;
+                                                    void main() {
+                                                        foo = 5;
+                                                    }
+                                                  ])
+                                  ],
+                                  [],
+                                  [tls="no" ; AC_MSG_WARN([Disabling usage of __thread])])
                  fi
                fi])
 AC_MSG_CHECKING(for high performance thread local storage)
@@ -968,7 +979,7 @@ AC_ARG_WITH(static_tools,
 	    AC_MSG_RESULT(yes)],
 	    [AC_MSG_RESULT(no)])
 
-# Disable LDL AND SDE for static builds
+# Disable LDL for static builds
 if test "$STATIC" = "-static"; then
   LDL=""
 fi
@@ -1006,6 +1017,37 @@ elif test "$shlib_tools" = "no"; then
    fi
    LINKLIB='$(LIBRARY)'	
 fi
+
+## By default we want libsde built, so if the user does not
+## give an option, then we set BUILD_LIBSDE_* to yes.
+AC_MSG_CHECKING(for building libsde)
+AC_ARG_WITH(libsde,
+            [AS_HELP_STRING([--with-libsde=<yes,no>],
+                            [Build the standalone libsde (default: yes)])],
+            [],
+            [with_libsde=yes])
+if test "$with_libsde" = "no"; then
+  BUILD_LIBSDE_SHARED="no"
+  BUILD_LIBSDE_STATIC="no"
+  AC_MSG_RESULT(no)
+else
+  BUILD_LIBSDE_SHARED="yes"
+  if test "$static_lib" = "yes"; then
+    BUILD_LIBSDE_STATIC="yes"
+    AC_MSG_RESULT(shared and static)
+  else
+    BUILD_LIBSDE_STATIC="no"
+    AC_MSG_RESULT(shared only)
+  fi
+  if test "$PWD" != ""; then
+    TOPDIR=$PWD
+  else
+    TOPDIR=$(pwd)
+  fi
+fi
+AC_SUBST(BUILD_LIBSDE_SHARED)
+AC_SUBST(BUILD_LIBSDE_STATIC)
+AC_SUBST(LIBSDEFLAGS)
 
 ##################################################
 #          perfctr
@@ -1927,6 +1969,9 @@ elif test "x$VECTOR" != "x"; then
 fi
     
 
+# always enable sysdetect
+components="$components sysdetect"
+
 
 PAPI_NUM_COMP=0
 for comp in $components; do
@@ -1970,11 +2015,17 @@ done
 tests="$tests comp_tests"
 
 for comp in $components; do
-  # check for SDE component to determine if we need -lrt in LDFLAGS
+  # check for SDE component to determine linking flags.
   if test "x$comp" = "xsde" ; then
-    CFLAGS="$CFLAGS -DSDE"
     LDFLAGS="$LDFLAGS $LRT"
     LIBS="$LIBS $LRT"
+    if test "$with_libsde" = "yes"; then
+      if test "$shlib_tools" = "yes"; then
+        LIBSDEFLAGS="-L${TOPDIR} -lsde -DSDE"
+      else
+        LIBSDEFLAGS="${TOPDIR}/libsde.a -DSDE"
+      fi
+    fi
   fi
 
   # check for intel_gpu component to determine if we need -lstdc++ in LDFLAGS
@@ -1999,9 +2050,15 @@ for comp in $components; do
           CFLAGS="$CFLAGS -DHAVE_ROCM_SMI"
       fi
   fi
+  if test "x$comp" = "xrocm"; then
+      case "$PAPI_ROCM_PROF" in
+          ROCPROFILER)
+              CFLAGS="$CFLAGS -DROCM_PROF_ROCPROFILER";;
+          *)
+              CFLAGS="$CFLAGS -DROCM_PROF_ROCPROFILER";;
+      esac
+  fi
 done
-
-AC_CHECK_HEADER([mpi.h],[CFLAGS="$CFLAGS -DHAVE_MPI"],[])
 
 CFLAGS="$CFLAGS -DPAPI_NUM_COMP=$PAPI_NUM_COMP"
 
@@ -2101,6 +2158,7 @@ AC_SUBST(FTEST_TARGETS)
 AC_SUBST(HAVE_NO_OVERRIDE_INIT)
 AC_SUBST(BGPM_INSTALL_DIR)
 AC_SUBST(CC_COMMON_NAME)
+AC_SUBST(NVPPC64LEFLAGS)
 
 if test "$cross_compiling" = "yes" ; then
   AC_MSG_NOTICE(Compiling genpapifdef with $nativecc because cross compiling)

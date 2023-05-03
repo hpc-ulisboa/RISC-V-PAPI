@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <string.h>
 #include <math.h>
 #include "sde_lib.h"
 
@@ -33,7 +34,7 @@ void simple_init(void){
 
     // Initialize PAPI SDEs
     handle = papi_sde_init("Simple2");
-    papi_sde_register_fp_counter(handle, ev_names[0], PAPI_SDE_RO|PAPI_SDE_INSTANT, PAPI_SDE_double, counter_accessor_function, &comp_value);
+    papi_sde_register_counter_cb(handle, ev_names[0], PAPI_SDE_RO|PAPI_SDE_INSTANT, PAPI_SDE_double, counter_accessor_function, &comp_value);
     papi_sde_register_counter(handle, ev_names[1], PAPI_SDE_RO|PAPI_SDE_DELTA,   PAPI_SDE_long_long, &total_iter_cnt);
     papi_sde_register_counter(handle, ev_names[2], PAPI_SDE_RO|PAPI_SDE_DELTA,   PAPI_SDE_long_long, &low_wtrmrk);
     papi_sde_register_counter(handle, ev_names[3], PAPI_SDE_RO|PAPI_SDE_DELTA,   PAPI_SDE_long_long, &high_wtrmrk);
@@ -48,7 +49,7 @@ void simple_init(void){
 // discover the SDEs that are exported by this library.
 papi_handle_t papi_sde_hook_list_events( papi_sde_fptr_struct_t *fptr_struct){
     handle = fptr_struct->init("Simple2");
-    fptr_struct->register_fp_counter(handle, ev_names[0], PAPI_SDE_RO|PAPI_SDE_INSTANT, PAPI_SDE_double, counter_accessor_function, &comp_value);
+    fptr_struct->register_counter_cb(handle, ev_names[0], PAPI_SDE_RO|PAPI_SDE_INSTANT, PAPI_SDE_double, counter_accessor_function, &comp_value);
     fptr_struct->register_counter(handle, ev_names[1], PAPI_SDE_RO|PAPI_SDE_DELTA,   PAPI_SDE_long_long, &total_iter_cnt);
     fptr_struct->register_counter(handle, ev_names[2], PAPI_SDE_RO|PAPI_SDE_DELTA,   PAPI_SDE_long_long, &low_wtrmrk);
     fptr_struct->register_counter(handle, ev_names[3], PAPI_SDE_RO|PAPI_SDE_DELTA,   PAPI_SDE_long_long, &high_wtrmrk);
@@ -66,16 +67,16 @@ papi_handle_t papi_sde_hook_list_events( papi_sde_fptr_struct_t *fptr_struct){
 
 // This function allows the library to perform operations in order to compute the value of an SDE at run-time
 long long counter_accessor_function( void *param ){
-    long long *ll_ptr;
+    long long ll;
     double *dbl_ptr = (double *)param;
 
     // Scale the variable by a factor of two. Real libraries will do meaningful work here.
     double value = *dbl_ptr * 2.0;
 
-    // Pack the bits of the result in a long long int.
-    ll_ptr = (long long *)&value;
+    // Copy the bits of the result in a long long int.
+    (void)memcpy(&ll, &value, sizeof(double));
 
-    return *ll_ptr;
+    return ll;
 }
 
 // Perform some nonsense computation to emulate a possible library behavior.

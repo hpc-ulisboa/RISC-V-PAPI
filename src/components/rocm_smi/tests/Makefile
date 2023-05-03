@@ -3,18 +3,17 @@
 # contact your sysadmin if you cannot find it.
 NAME=rocm_smi
 include ../../Makefile_comp_tests.target
+PAPI_ROCM_ROOT ?= /opt/rocm
 HIP_PATH= ${PAPI_ROCM_ROOT}/hip
 HIPCC=$(HIP_PATH)/bin/hipcc
 
-include ../../Makefile_comp_tests.target
-INCLUDE += -I$(PAPI_ROCM_ROOT)/rocm_smi/include
-INCLUDE += -I$(PAPI_ROCM_ROOT)/rocm_smi/include/rocm_smi
-INCLUDE += -I$(PAPI_ROCM_ROOT)/hip/include
-INCLUDE += -I$(PAPI_ROCM_ROOT)/hsa/include/hsa
-INCLUDE += -I$(PAPI_ROCM_ROOT)/rocprofiler/include
 INCLUDE += -I$(PAPI_ROCM_ROOT)/include
-INCLUDE += -I$(PAPI_ROCM_ROOT)/rocblas/include
-LDFLAGS = -ldl -g -L$(PAPI_ROCM_ROOT)/rocblas/lib -lrocblas
+INCLUDE += -I$(PAPI_ROCM_ROOT)/include/rocm_smi
+INCLUDE += -I$(PAPI_ROCM_ROOT)/include/hip
+INCLUDE += -I$(PAPI_ROCM_ROOT)/include/hsa
+INCLUDE += -I$(PAPI_ROCM_ROOT)/include/rocprofiler
+INCLUDE += -I$(PAPI_ROCM_ROOT)/include/rocblas
+LDFLAGS = -ldl -g -L$(PAPI_ROCM_ROOT)/lib/rocblas -lrocblas
 
 %.o:%.c
 	@echo "INCLUDE=" $(INCLUDE)

@@ -1,4 +1,4 @@
-.TH "PAPI_read" 3 "Thu Feb 27 2020" "Version 6.0.0.0" "PAPI" \" -*- nroff -*-
+.TH "PAPI_read" 3 "Fri Mar 10 2023" "Version 7.0.1.0" "PAPI" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -49,20 +49,19 @@ Note the differences between \fBPAPI_read()\fP and \fBPAPI_accum()\fP, specifica
 
 .PP
 .nf
-* do_100events();
-* if (PAPI_read(EventSet, values) != PAPI_OK)
-*    handle_error(1);
-* // values[0] now equals 100
-* do_100events();
-* if (PAPI_accum(EventSet, values) != PAPI_OK)
-*    handle_error(1);
-* // values[0] now equals 200
-* values[0] = -100;
-* do_100events();
-* if (PAPI_accum(EventSet, values) != PAPI_OK)
-*     handle_error(1);
-* // values[0] now equals 0 
-* 
+do_100events();
+if (PAPI_read(EventSet, values) != PAPI_OK)
+   handle_error(1);
+// values[0] now equals 100
+do_100events();
+if (PAPI_accum(EventSet, values) != PAPI_OK)
+   handle_error(1);
+// values[0] now equals 300
+values[0] = -100;
+do_100events();
+if (PAPI_accum(EventSet, values) != PAPI_OK)
+    handle_error(1);
+// values[0] now equals 0 
 
 .fi
 .PP

@@ -369,11 +369,12 @@ _coretemp_init_thread( hwd_context_t *ctx )
 static int
 _coretemp_init_component( int cidx )
 {
+    int retval = PAPI_OK;
      int i = 0;
      struct temp_event *t,*last;
 
      if ( is_initialized )
-        return (PAPI_OK );
+         goto fn_exit;
 
      is_initialized = 1;
 
@@ -388,7 +389,8 @@ _coretemp_init_component( int cidx )
         "Cannot open /sys/class/hwmon",PAPI_MAX_STR_LEN);
         _coretemp_vector.cmp_info.disabled_reason[PAPI_MAX_STR_LEN-1]=0;
         if (strCpy == NULL) HANDLE_STRING_ERROR;
-        return PAPI_ENOCMP;
+        retval = PAPI_ECMP;
+        goto fn_fail;
      }
 
      if ( num_events == 0 ) {
@@ -396,7 +398,8 @@ _coretemp_init_component( int cidx )
         "No coretemp events found",PAPI_MAX_STR_LEN);
         _coretemp_vector.cmp_info.disabled_reason[PAPI_MAX_STR_LEN-1]=0;
         if (strCpy == NULL) HANDLE_STRING_ERROR;
-        return PAPI_ENOCMP;
+        retval = PAPI_ECMP;
+        goto fn_fail;
      }
 
      t = root;
@@ -407,25 +410,22 @@ _coretemp_init_component( int cidx )
           int strErr=snprintf(_coretemp_vector.cmp_info.disabled_reason, PAPI_MAX_STR_LEN, "malloc() of _coretemp_native_events failed for %lu bytes.", num_events*sizeof(CORETEMP_native_event_entry_t));
           _coretemp_vector.cmp_info.disabled_reason[PAPI_MAX_STR_LEN-1]=0;
           if (strErr > PAPI_MAX_STR_LEN) HANDLE_STRING_ERROR;
-          return(PAPI_ENOMEM);
+          retval = PAPI_ENOMEM;
+          goto fn_fail;
      }
 
      do {
         char *strCpy;
-        strCpy=strncpy(_coretemp_native_events[i].name,t->name,PAPI_MAX_STR_LEN-2);
-        _coretemp_native_events[i].name[PAPI_MAX_STR_LEN-1] = '\0';
+        strCpy=strncpy(_coretemp_native_events[i].name,t->name,PAPI_MAX_STR_LEN);
         if (strCpy == NULL) HANDLE_STRING_ERROR;
 
         strCpy=strncpy(_coretemp_native_events[i].path,t->path,PATH_MAX);
-        _coretemp_native_events[i].path[PATH_MAX-1] = '\0';
         if (strCpy == NULL) HANDLE_STRING_ERROR;
 
-        strCpy=strncpy(_coretemp_native_events[i].units,t->units,PAPI_MIN_STR_LEN-2);
-	    _coretemp_native_events[i].units[PAPI_MIN_STR_LEN-1] = '\0';
+        strCpy=strncpy(_coretemp_native_events[i].units,t->units,PAPI_MIN_STR_LEN);
         if (strCpy == NULL) HANDLE_STRING_ERROR;
 
-        strCpy=strncpy(_coretemp_native_events[i].description,t->description,PAPI_MAX_STR_LEN-2);
-        _coretemp_native_events[i].description[PAPI_MAX_STR_LEN-1] = '\0';
+        strCpy=strncpy(_coretemp_native_events[i].description,t->description,PAPI_MAX_STR_LEN);
         if (strCpy == NULL) HANDLE_STRING_ERROR;
 
 	    _coretemp_native_events[i].stone = 0;
@@ -443,7 +443,11 @@ _coretemp_init_component( int cidx )
      /* Export the component id */
      _coretemp_vector.cmp_info.CmpIdx = cidx;
 
-     return PAPI_OK;
+  fn_exit:
+     _papi_hwd[cidx]->cmp_info.disabled = retval;
+     return retval;
+  fn_fail:
+     goto fn_exit;
 }
 
 

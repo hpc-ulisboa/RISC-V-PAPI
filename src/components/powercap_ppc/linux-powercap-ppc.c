@@ -110,7 +110,7 @@ _powercap_ppc_init_thread( hwd_context_t *ctx )
 static int
 _powercap_ppc_init_component( int cidx )
 {
-
+    int retval = PAPI_OK;
     int e = -1;
     char events_dir[128];
     char event_path[128];
@@ -126,7 +126,8 @@ _powercap_ppc_init_component( int cidx )
         strCpy=strncpy(_powercap_ppc_vector.cmp_info.disabled_reason, "Not an IBM Power9 processor", PAPI_MAX_STR_LEN);
         _powercap_ppc_vector.cmp_info.disabled_reason[PAPI_MAX_STR_LEN-1]=0;
         if (strCpy == NULL) HANDLE_STRING_ERROR;
-        return PAPI_ENOSUPP;
+        retval = PAPI_ENOSUPP;
+        goto fn_fail;
     }
 
     num_events = 0;
@@ -141,7 +142,8 @@ _powercap_ppc_init_component( int cidx )
             PAPI_MAX_STR_LEN);
         _powercap_ppc_vector.cmp_info.disabled_reason[PAPI_MAX_STR_LEN-1]=0;
         if (strCpy == NULL) HANDLE_STRING_ERROR;
-        return PAPI_ENOSUPP;
+        retval = PAPI_ENOSUPP;
+        goto fn_fail;
     }
 
     /* opendir needs clean up. */
@@ -190,7 +192,11 @@ _powercap_ppc_init_component( int cidx )
     /* Export the component id */
     _powercap_ppc_vector.cmp_info.CmpIdx = cidx;
 
-    return PAPI_OK;
+  fn_exit:
+    _papi_hwd[cidx]->cmp_info.disabled = retval;
+    return retval;
+  fn_fail:
+    goto fn_exit;
 }
 
 
@@ -399,9 +405,9 @@ _powercap_ppc_ntv_code_to_info( unsigned int EventCode, PAPI_event_info_t *info 
     if ( index < 0 || index >= num_events )
         return PAPI_ENOEVNT;
 
-    _local_strlcpy( info->symbol, powercap_ppc_ntv_events[index].name, sizeof( info->symbol ));
-    _local_strlcpy( info->units, powercap_ppc_ntv_events[index].units, sizeof( info->units ) );
-    _local_strlcpy( info->long_descr, powercap_ppc_ntv_events[index].description, sizeof( info->long_descr ) );
+    _local_strlcpy( info->symbol, powercap_ppc_ntv_events[index].name, sizeof( info->symbol ) - 1 );
+    _local_strlcpy( info->units, powercap_ppc_ntv_events[index].units, sizeof( info->units ) - 1 );
+    _local_strlcpy( info->long_descr, powercap_ppc_ntv_events[index].description, sizeof( info->long_descr ) - 1 );
 
     info->data_type = powercap_ppc_ntv_events[index].return_type;
     return PAPI_OK;

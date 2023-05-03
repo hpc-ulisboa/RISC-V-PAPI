@@ -1,4 +1,4 @@
-.TH "PAPI_get_real_usec" 3 "Thu Feb 27 2020" "Version 6.0.0.0" "PAPI" \" -*- nroff -*-
+.TH "PAPI_get_real_usec" 3 "Fri Mar 10 2023" "Version 7.0.1.0" "PAPI" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -11,29 +11,22 @@ get real time counter value in microseconds
 .PP
 .SH "Detailed Description"
 .PP 
+This function returns the total real time passed since some arbitrary starting point\&. The time is returned in microseconds\&. This call is equivalent to wall clock time\&. 
+.PP
+\fBExamples:\fP
+.RS 4
 
 .PP
 .nf
-This function returns the total real time passed since some arbitrary 
-starting point. 
-The time is returned in microseconds. 
-This call is equivalent to wall clock time.
-@par Examples:
+s = PAPI_get_real_cyc();
+your_slow_code();
+e = PAPI_get_real_cyc();
+printf("Wallclock cycles: %lld\en",e-s);
 
 .fi
 .PP
  
-.PP
-.nf
-    s = PAPI_get_real_cyc();
-    your_slow_code();
-    e = PAPI_get_real_cyc();
-    printf("Wallclock cycles: %lld\en",e-s);
-*   
-
-.fi
-.PP
- 
+.RE
 .PP
 \fBSee Also:\fP
 .RS 4

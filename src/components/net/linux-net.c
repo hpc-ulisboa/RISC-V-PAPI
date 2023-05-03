@@ -178,9 +178,13 @@ generateNetEventList( void )
             }
             last = temp;
 
-            snprintf(temp->name, PAPI_MAX_STR_LEN, "%s:%s",
+            size_t str_len = strlen(ifname) + strlen(_net_counter_info[j].name) + 1;
+            str_len = (str_len > PAPI_MAX_STR_LEN - 1) ? PAPI_MAX_STR_LEN - 1 : str_len;
+            snprintf(temp->name, str_len, "%s:%s",
                     ifname, _net_counter_info[j].name);
-            snprintf(temp->description, PAPI_MAX_STR_LEN, "%s %s",
+            str_len = strlen(ifname) + strlen(_net_counter_info[j].description) + 1;
+            str_len = (str_len > PAPI_MAX_STR_LEN - 1) ? PAPI_MAX_STR_LEN - 1 : str_len;
+            snprintf(temp->description, str_len, "%s %s",
                     ifname, _net_counter_info[j].description);
 
             count++;
@@ -310,11 +314,12 @@ _net_init_thread( hwd_context_t *ctx )
 static int
 _net_init_component( int cidx  )
 {
+    int retval = PAPI_OK;
     int i = 0;
     struct temp_event *t, *last;
 
     if ( is_initialized )
-        return PAPI_OK;
+        goto fn_exit;
 
     memset(_net_register_start, 0,
     		NET_MAX_COUNTERS*sizeof(_net_register_start[0]));
@@ -326,20 +331,20 @@ _net_init_component( int cidx  )
     /* The network interfaces are listed in /proc/net/dev */
     num_events = generateNetEventList();
 
-    if ( num_events < 0 )  /* disabled_reason already set */
-        return num_events;
+    if ( num_events < 0 ) {  /* disabled_reason already set */
+        retval = PAPI_ECMP;
+        goto fn_fail;
+    }
 
     if ( num_events == 0 )  /* No network interfaces found */
-        return PAPI_OK;
+        goto fn_exit;
 
     t = root;
     _net_native_events = (NET_native_event_entry_t*)
         papi_malloc(sizeof(NET_native_event_entry_t) * num_events);
     do {
-        strncpy(_net_native_events[i].name, t->name, PAPI_MAX_STR_LEN-1);
-        _net_native_events[i].name[PAPI_MAX_STR_LEN-1] = '\0';
-        strncpy(_net_native_events[i].description, t->description, PAPI_MAX_STR_LEN-1);
-        _net_native_events[i].description[PAPI_MAX_STR_LEN-1] = '\0';
+        strncpy(_net_native_events[i].name, t->name, PAPI_MAX_STR_LEN);
+        strncpy(_net_native_events[i].description, t->description, PAPI_MAX_STR_LEN);
         _net_native_events[i].resources.selector = i + 1;
         last    = t;
         t       = t->next;
@@ -354,7 +359,11 @@ _net_init_component( int cidx  )
     /* Export the component id */
     _net_vector.cmp_info.CmpIdx = cidx;
 
-    return PAPI_OK;
+  fn_exit:
+    _papi_hwd[cidx]->cmp_info.disabled = retval;
+    return retval;
+  fn_fail:
+    goto fn_exit;
 }
 
 

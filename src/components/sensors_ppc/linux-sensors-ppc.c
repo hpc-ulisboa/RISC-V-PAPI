@@ -216,7 +216,8 @@ read_sensors_ppc_value( int index )
         case OCC_SENSOR_READING_COUNTER:
             if (OCC_SENSORS_ACCUMULATOR_TAG == midx)
                 return read_sensors_ppc_counter(s, gidx);
-            /* fallthrough: counters only return the accumulator */
+            /* fall through */
+            /* counters only return the accumulator */
         default:
             return 42;
     }
@@ -242,6 +243,7 @@ _sensors_ppc_init_thread( hwd_context_t *ctx )
 static int
 _sensors_ppc_init_component( int cidx )
 {
+    int retval = PAPI_OK;
     int s = -1;
     int strErr;
     char events_dir[128];
@@ -256,7 +258,8 @@ _sensors_ppc_init_component( int cidx )
         strCpy=strncpy(_sensors_ppc_vector.cmp_info.disabled_reason, "Not an IBM processor", PAPI_MAX_STR_LEN);
         _sensors_ppc_vector.cmp_info.disabled_reason[PAPI_MAX_STR_LEN-1]=0;
         if (strCpy == NULL) HANDLE_STRING_ERROR;
-        return PAPI_ENOSUPP;
+        retval = PAPI_ENOSUPP;
+        goto fn_fail;
     }
 
     int ret = snprintf(events_dir, sizeof(events_dir), "/sys/firmware/opal/exports/");
@@ -266,7 +269,8 @@ _sensors_ppc_init_component( int cidx )
           "%s:%i Could not open events_dir='%s'.", __FILE__, __LINE__, events_dir);
         _sensors_ppc_vector.cmp_info.disabled_reason[PAPI_MAX_STR_LEN-1]=0;
         if (strErr > PAPI_MAX_STR_LEN) HANDLE_STRING_ERROR;
-        return PAPI_ENOSUPP;
+        retval = PAPI_ENOSUPP;
+        goto fn_fail;
     }
 
     ret = snprintf(event_path, sizeof(event_path), "%s%s", events_dir, pkg_sys_name);
@@ -276,7 +280,8 @@ _sensors_ppc_init_component( int cidx )
           "%s:%i Could not access event_path='%s'.", __FILE__, __LINE__, event_path);
         _sensors_ppc_vector.cmp_info.disabled_reason[PAPI_MAX_STR_LEN-1]=0;
         if (strErr > PAPI_MAX_STR_LEN) HANDLE_STRING_ERROR;
-        return PAPI_ENOSUPP;
+        retval = PAPI_ENOSUPP;
+        goto fn_fail;
     }
 
     event_fd = open(event_path, pkg_sys_flag);
@@ -285,7 +290,8 @@ _sensors_ppc_init_component( int cidx )
           "%s:%i Could not open event_path='%s'.", __FILE__, __LINE__, event_path);
         _sensors_ppc_vector.cmp_info.disabled_reason[PAPI_MAX_STR_LEN-1]=0;
         if (strErr > PAPI_MAX_STR_LEN) HANDLE_STRING_ERROR;
-        return PAPI_ENOSUPP;
+        retval = PAPI_ENOSUPP;
+        goto fn_fail;
     }
 
     memset(occ_num_events, 0, (MAX_OCCS+1)*sizeof(int));
@@ -297,7 +303,8 @@ _sensors_ppc_init_component( int cidx )
             "%s:%i Failed to alloc %i bytes for buf.", __FILE__, __LINE__, OCC_SENSOR_DATA_BLOCK_SIZE);
             _sensors_ppc_vector.cmp_info.disabled_reason[PAPI_MAX_STR_LEN-1]=0;
             if (strErr > PAPI_MAX_STR_LEN) HANDLE_STRING_ERROR;
-            return PAPI_ENOMEM;
+            retval = PAPI_ENOMEM;
+            goto fn_fail;
         }
 
         occ_hdr[s] = (struct occ_sensor_data_header_s*)buf;
@@ -338,7 +345,8 @@ _sensors_ppc_init_component( int cidx )
             "%s:%i Failed to alloc %i bytes for ping[%i].", __FILE__, __LINE__, buff_size, s);
             _sensors_ppc_vector.cmp_info.disabled_reason[PAPI_MAX_STR_LEN-1]=0;
             if (strErr > PAPI_MAX_STR_LEN) HANDLE_STRING_ERROR;
-            return PAPI_ENOMEM;
+            retval = PAPI_ENOMEM;
+            goto fn_fail;
         }
 
         double_ping[s] = (uint32_t*)malloc(buff_size);
@@ -347,7 +355,8 @@ _sensors_ppc_init_component( int cidx )
             "%s:%i Failed to alloc %i bytes for double_ping[%i].", __FILE__, __LINE__, buff_size, s);
             _sensors_ppc_vector.cmp_info.disabled_reason[PAPI_MAX_STR_LEN-1]=0;
             if (strErr > PAPI_MAX_STR_LEN) HANDLE_STRING_ERROR;
-            return PAPI_ENOMEM;
+            retval = PAPI_ENOMEM;
+            goto fn_fail;
         }
 
         double_pong[s] = double_ping[s];
@@ -374,7 +383,11 @@ _sensors_ppc_init_component( int cidx )
     /* Export the component id */
     _sensors_ppc_vector.cmp_info.CmpIdx = cidx;
 
-    return PAPI_OK;
+  fn_exit:
+    _papi_hwd[cidx]->cmp_info.disabled = retval;
+    return retval;
+  fn_fail:
+    goto fn_exit;
 }
 
 

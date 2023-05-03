@@ -222,7 +222,7 @@ read_mx_counters( long long *counters )
 static int
 _mx_init_component( int cidx )
 {
-
+    int retval = PAPI_OK;
 	FILE *fff;
 	char *path;
 	int checklen, len, pathlen;
@@ -268,7 +268,8 @@ _mx_init_component( int cidx )
 	   /* mx_counters not found */
 	   strncpy(_mx_vector.cmp_info.disabled_reason,
 		   "No MX utilities found",PAPI_MAX_STR_LEN);
-	   return PAPI_ECMP;
+       retval = PAPI_ECMP;
+       goto fn_fail;
 	}
 	fclose(fff);
 
@@ -278,8 +279,11 @@ _mx_init_component( int cidx )
 	/* Export the component id */
 	_mx_vector.cmp_info.CmpIdx = cidx;
 
-
-	return PAPI_OK;
+  fn_exit:
+    _papi_hwd[cidx]->cmp_info.disabled = retval;
+    return retval;
+  fn_fail:
+    goto fn_exit;
 }
 
 

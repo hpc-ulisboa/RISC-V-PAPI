@@ -710,6 +710,12 @@ set_up_mmap( pe_control_t *ctl, int evt_idx)
 
 
 
+/* Request user access for arm64 */
+static inline void arm64_request_user_access(struct perf_event_attr *hw_event)
+{
+	hw_event->config1=0x2;        /* Request user access */
+}
+
 /* Open all events in the control state */
 static int
 open_pe_events( pe_context_t *ctx, pe_control_t *ctl )
@@ -763,6 +769,11 @@ open_pe_events( pe_context_t *ctx, pe_control_t *ctl )
 		if (( i == 0 ) || (ctl->multiplexed)) {
 			ctl->events[i].attr.pinned = !ctl->multiplexed;
 			ctl->events[i].attr.disabled = 1;
+#if defined(__aarch64__)
+			if (_perf_event_vector.cmp_info.fast_counter_read) {
+				arm64_request_user_access(&ctl->events[i].attr);
+			}
+#endif
 			ctl->events[i].group_leader_fd=-1;
 			ctl->events[i].attr.read_format = get_read_format(
 							ctl->multiplexed,
@@ -771,6 +782,11 @@ open_pe_events( pe_context_t *ctx, pe_control_t *ctl )
 		} else {
 			ctl->events[i].attr.pinned=0;
 			ctl->events[i].attr.disabled = 0;
+#if defined(__aarch64__)
+			if (_perf_event_vector.cmp_info.fast_counter_read) {
+				arm64_request_user_access(&ctl->events[i].attr);
+			}
+#endif
 			ctl->events[i].group_leader_fd=ctl->events[0].event_fd;
 			ctl->events[i].attr.read_format = get_read_format(
 							ctl->multiplexed,
@@ -1075,8 +1091,16 @@ _pe_reset( hwd_context_t *ctx, hwd_control_state_t *ctl )
 
 	/* We need to reset all of the events, not just the group leaders */
 	for( i = 0; i < pe_ctl->num_events; i++ ) {
-		ret = ioctl( pe_ctl->events[i].event_fd,
-				PERF_EVENT_IOC_RESET, NULL );
+		if (_perf_event_vector.cmp_info.fast_counter_read) {
+			ret = ioctl( pe_ctl->events[i].event_fd, 
+					PERF_EVENT_IOC_RESET, NULL );
+			pe_ctl->reset_counts[i] = mmap_read_reset_count(
+					pe_ctl->events[i].mmap_buf);
+			pe_ctl->reset_flag = 1;
+		} else {
+			ret = ioctl( pe_ctl->events[i].event_fd, 
+					PERF_EVENT_IOC_RESET, NULL );
+		}
 		if ( ret == -1 ) {
 			PAPIERROR("ioctl(%d, PERF_EVENT_IOC_RESET, NULL) "
 					"returned error, Linux says: %s",
@@ -1147,6 +1171,8 @@ _pe_rdpmc_read( hwd_context_t *ctx, hwd_control_state_t *ctl,
 	for ( i = 0; i < pe_ctl->num_events; i++ ) {
 
 		count = mmap_read_self(pe_ctl->events[i].mmap_buf,
+						pe_ctl->reset_flag,
+						pe_ctl->reset_counts[i],
 						&enabled,&running);
 
 		if (count==0xffffffffffffffffULL) {
@@ -1466,6 +1492,10 @@ _pe_start( hwd_context_t *ctx, hwd_control_state_t *ctl )
 				pe_ctl->events[i].event_fd);
 			ret=ioctl( pe_ctl->events[i].event_fd,
 				PERF_EVENT_IOC_ENABLE, NULL) ;
+			if (_perf_event_vector.cmp_info.fast_counter_read) {
+				pe_ctl->reset_counts[i] = 0LL;
+				pe_ctl->reset_flag = 0;
+			}
 
 			/* ioctls always return -1 on failure */
 			if (ret == -1) {
@@ -1966,7 +1996,7 @@ _pe_dispatch_timer( int n, hwd_siginfo_t *info, void *uc)
 	( void ) n;                           /*unused */
 	_papi_hwi_context_t hw_context;
 	int found_evt_idx = -1, fd = info->si_fd;
-	caddr_t address;
+	vptr_t address;
 	ThreadInfo_t *thread = _papi_hwi_lookup_thread( 0 );
 	int i;
 	pe_control_t *ctl;
@@ -2095,7 +2125,7 @@ _pe_dispatch_timer( int n, hwd_siginfo_t *info, void *uc)
 	*/
 
 		_papi_hwi_dispatch_overflow_signal( ( void * ) &hw_context,
-					( caddr_t ) ( unsigned long ) ip,
+					( vptr_t ) ( unsigned long ) ip,
 					NULL, ( 1 << found_evt_idx ), 0,
 					&thread, cidx );
 
@@ -2325,6 +2355,29 @@ _pe_shutdown_component( void ) {
 }
 
 
+#if defined(__aarch64__)
+/* Check access PMU counter from User space for arm64 support */
+static int _pe_detect_arm64_access(void) {
+
+	FILE *fff;
+	int perf_user_access;
+	int retval;
+
+	fff=fopen("/proc/sys/kernel/perf_user_access","r");
+	if (fff==NULL) {
+		return 0;
+	}
+
+	/* 1 means you can access PMU counter from User space */
+	/* 0 means you can not access PMU counter from User space */
+	retval=fscanf(fff,"%d",&perf_user_access);
+	if (retval!=1) fprintf(stderr,"Error reading /proc/sys/kernel/perf_user_access\n");
+	fclose(fff);
+
+	return perf_user_access;
+}
+#endif
+
 /* Check the mmap page for rdpmc support */
 static int _pe_detect_rdpmc(void) {
 
@@ -2333,10 +2386,13 @@ static int _pe_detect_rdpmc(void) {
 	void *addr;
 	struct perf_event_mmap_page *our_mmap;
 	int page_size=getpagesize();
+#if defined(__aarch64__)
+	int retval;
+#endif
 
-#if defined(__i386__) || defined (__x86_64__)
+#if defined(__i386__) || defined (__x86_64__) || defined(__aarch64__)
 #else
-	/* We only support rdpmc on x86 for now */
+	/* We support rdpmc on x86 and arm64 for now */
         return 0;
 #endif
 
@@ -2346,12 +2402,23 @@ static int _pe_detect_rdpmc(void) {
 		return 0;
 	}
 
+#if defined(__aarch64__)
+	/* Detect if we can use PMU counter from User space for arm64 */
+	retval = _pe_detect_arm64_access();
+	if (retval == 0) {
+		return 0;
+	}
+#endif
+
 	/* Create a fake instructions event so we can read a mmap page */
 	memset(&pe,0,sizeof(struct perf_event_attr));
 
 	pe.type=PERF_TYPE_HARDWARE;
 	pe.size=sizeof(struct perf_event_attr);
 	pe.config=PERF_COUNT_HW_INSTRUCTIONS;
+#if defined(__aarch64__)
+	arm64_request_user_access(&pe);
+#endif
 	pe.exclude_kernel=1;
 	pe.disabled=1;
 
@@ -2417,7 +2484,7 @@ _pe_handle_paranoid(papi_vector_t *component) {
 		strCpy=strncpy(component->cmp_info.disabled_reason,
 			"perf_event support not detected",PAPI_MAX_STR_LEN);
       if (strCpy == NULL) HANDLE_STRING_ERROR;
-		return PAPI_ENOCMP;
+		return PAPI_ECMP;
 	}
 
 	/* 3 (vendor patch) means completely disabled */
@@ -2433,7 +2500,7 @@ _pe_handle_paranoid(papi_vector_t *component) {
 		strCpy=strncpy(component->cmp_info.disabled_reason,
 			"perf_event support disabled by Linux with paranoid=3",PAPI_MAX_STR_LEN);
       if (strCpy == NULL) HANDLE_STRING_ERROR;
-		return PAPI_ENOCMP;
+		return PAPI_ECMP;
 	}
 
 	if ((paranoid_level==2) && (getuid()!=0)) {
@@ -2502,7 +2569,7 @@ _pe_init_component( int cidx )
 	/* Update component behavior based on paranoid setting */
 	retval=_pe_handle_paranoid(_papi_hwd[cidx]);
    
-	if (retval!=PAPI_OK) return retval; // disabled_reason handled by _pe_handle_paranoid.
+	if (retval!=PAPI_OK) goto fn_fail; // disabled_reason handled by _pe_handle_paranoid.
 
 #if (OBSOLETE_WORKAROUNDS==1)
 	/* Handle any kernel version related workarounds */
@@ -2515,7 +2582,7 @@ _pe_init_component( int cidx )
 		strCpy=strncpy(_papi_hwd[cidx]->cmp_info.disabled_reason,
 			"Error initializing mmtimer",PAPI_MAX_STR_LEN);
       if (strCpy == NULL) HANDLE_STRING_ERROR;
-		return retval;
+		goto fn_fail;
 	}
 
 	/* Set the overflow signal */
@@ -2547,7 +2614,7 @@ _pe_init_component( int cidx )
 		strCpy=strncpy(_papi_hwd[cidx]->cmp_info.disabled_reason,
 			"Error initializing libpfm4",PAPI_MAX_STR_LEN);
       if (strCpy == NULL) HANDLE_STRING_ERROR;
-		return retval;
+		goto fn_fail;
 
 	}
 
@@ -2596,7 +2663,7 @@ _pe_init_component( int cidx )
             if (strCpy == NULL) HANDLE_STRING_ERROR;
 
 		}
-		return retval;
+        goto fn_fail;
 	}
 
 	/* Detect NMI watchdog which can steal counters */
@@ -2612,7 +2679,11 @@ _pe_init_component( int cidx )
 	/* check for exclude_guest issue */
 	check_exclude_guest();
 
-	return PAPI_OK;
+  fn_exit:
+    _papi_hwd[cidx]->cmp_info.disabled = retval;
+    return retval;
+  fn_fail:
+    goto fn_exit;
 
 }
 

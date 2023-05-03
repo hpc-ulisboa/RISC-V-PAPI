@@ -1,4 +1,4 @@
-.TH "PAPI_num_events" 3 "Thu Feb 27 2020" "Version 6.0.0.0" "PAPI" \" -*- nroff -*-
+.TH "PAPI_num_events" 3 "Fri Mar 10 2023" "Version 7.0.1.0" "PAPI" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -17,7 +17,7 @@ Return the number of events in an event set\&.
 .RS 4
 #include <\fBpapi\&.h\fP> 
 .br
- int \fBPAPI_num_events(int  EventSet )\fP;
+int \fBPAPI_num_events(int  EventSet )\fP;
 .RE
 .PP
 \fBParameters:\fP
@@ -41,9 +41,8 @@ Return the number of events in an event set\&.
 
 .PP
 .nf
-* // Count the events in our EventSet 
-* printf(\"%d events found in EventSet\&.\\n\", PAPI_num_events(EventSet));
-* 
+// Count the events in our EventSet 
+printf(\"%d events found in EventSet\&.\\n\", PAPI_num_events(EventSet));
 
 .fi
 .PP

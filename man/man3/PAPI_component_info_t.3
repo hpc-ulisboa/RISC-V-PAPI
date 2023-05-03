@@ -1,4 +1,4 @@
-.TH "PAPI_component_info_t" 3 "Thu Feb 27 2020" "Version 6.0.0.0" "PAPI" \" -*- nroff -*-
+.TH "PAPI_component_info_t" 3 "Fri Mar 10 2023" "Version 7.0.1.0" "PAPI" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -28,10 +28,13 @@ PAPI_component_info_t \-
 .RI "char \fBkernel_version\fP [64]"
 .br
 .ti -1c
-.RI "char \fBdisabled_reason\fP [128]"
+.RI "char \fBdisabled_reason\fP [1024]"
 .br
 .ti -1c
 .RI "int \fBdisabled\fP"
+.br
+.ti -1c
+.RI "int \fBinitialized\fP"
 .br
 .ti -1c
 .RI "int \fBCmpIdx\fP"
@@ -67,7 +70,7 @@ PAPI_component_info_t \-
 .RI "int \fBcomponent_type\fP"
 .br
 .ti -1c
-.RI "char * \fBpmu_names\fP [40]"
+.RI "char * \fBpmu_names\fP [80]"
 .br
 .ti -1c
 .RI "int \fBreserved\fP [8]"
@@ -112,7 +115,7 @@ PAPI_component_info_t \-
 .RI "unsigned int \fBinherit\fP:1"
 .br
 .ti -1c
-.RI "unsigned int \fBreserved_bits\fP:12"
+.RI "unsigned int \fBreserved_bits\fP:19"
 .br
 .in -1c
 .SH "Detailed Description"
@@ -144,7 +147,7 @@ The default granularity when this component is used
 Description of the component 
 .SS "int PAPI_component_info_t::disabled"
 0 if enabled, otherwise error code from initialization 
-.SS "char PAPI_component_info_t::disabled_reason[128]"
+.SS "char PAPI_component_info_t::disabled_reason[1024]"
 Reason for failure of initialization 
 .SS "unsigned int PAPI_component_info_t::fast_counter_read"
 Supports a user level PMC read instruction 
@@ -158,6 +161,8 @@ hw overflow intr, does not need to be emulated in software
 Signal used by hardware to deliver PMC events 
 .SS "unsigned int PAPI_component_info_t::inherit"
 Supports child processes inheriting parents counters 
+.SS "int PAPI_component_info_t::initialized"
+Component is ready to use 
 .SS "unsigned int PAPI_component_info_t::kernel_multiplex"
 In kernel multiplexing 
 .SS "unsigned int PAPI_component_info_t::kernel_profile"
@@ -174,7 +179,7 @@ Number of hardware counters the component or PAPI can multiplex supports
 Number of native events the component supports 
 .SS "int PAPI_component_info_t::num_preset_events"
 Number of preset events the component supports 
-.SS "char* PAPI_component_info_t::pmu_names[40]"
+.SS "char* PAPI_component_info_t::pmu_names[80]"
 list of pmu names supported by this component 
 .SS "unsigned int PAPI_component_info_t::posix1b_timers"
 Using POSIX 1b interval timers (timer_create) instead of setitimer 

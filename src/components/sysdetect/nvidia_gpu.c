@@ -16,27 +16,20 @@
 
 #include "sysdetect.h"
 #include "nvidia_gpu.h"
-#include "shm.h"
-
-#define HANDLE_STRING_ERROR {                                    \
-    fprintf(stderr, "%s:%i unexpected string function error.\n", \
-            __FILE__, __LINE__);                                 \
-    exit(-1);                                                    \
-}
 
 #ifdef HAVE_CUDA
 #include "cuda.h"
 
 static void *cuda_dlp = NULL;
 
-CUresult (*cuInitPtr)( unsigned int flags ) = NULL;
-CUresult (*cuDeviceGetPtr)( CUdevice *device, int ordinal ) = NULL;
-CUresult (*cuDeviceGetNamePtr)( char *name, int len, CUdevice dev ) = NULL;
-CUresult (*cuDeviceGetCountPtr)( int *count ) = NULL;
-CUresult (*cuDeviceGetAttributePtr)( int *pi, CUdevice_attribute attrib,
-                                     CUdevice dev ) = NULL;
-CUresult (*cuDeviceGetPCIBusIdPtr)( char *bus_id_string, int len,
-                                    CUdevice dev ) = NULL;
+static CUresult (*cuInitPtr)( unsigned int flags ) = NULL;
+static CUresult (*cuDeviceGetPtr)( CUdevice *device, int ordinal ) = NULL;
+static CUresult (*cuDeviceGetNamePtr)( char *name, int len, CUdevice dev ) = NULL;
+static CUresult (*cuDeviceGetCountPtr)( int *count ) = NULL;
+static CUresult (*cuDeviceGetAttributePtr)( int *pi, CUdevice_attribute attrib,
+                                            CUdevice dev ) = NULL;
+static CUresult (*cuDeviceGetPCIBusIdPtr)( char *bus_id_string, int len,
+                                           CUdevice dev ) = NULL;
 
 #define CU_CALL(call, err_handle) do {                                          \
     CUresult _status = (call);                                                  \
@@ -54,7 +47,7 @@ CUresult (*cuDeviceGetPCIBusIdPtr)( char *bus_id_string, int len,
     }                                                                           \
 } while(0)
 
-static void fill_dev_info( PAPI_gpu_info_u *dev_info, int dev );
+static void fill_dev_info( _sysdetect_gpu_info_u *dev_info, int dev );
 static int cuda_is_enabled( void );
 static int load_cuda_sym( char *status );
 static int unload_cuda_sym( void );
@@ -65,12 +58,12 @@ static int unload_cuda_sym( void );
 
 static void *nvml_dlp = NULL;
 
-nvmlReturn_t (*nvmlInitPtr)( void );
-nvmlReturn_t (*nvmlDeviceGetCountPtr)( unsigned int *deviceCount ) = NULL;
-nvmlReturn_t (*nvmlDeviceGetHandleByPciBusIdPtr)( const char *bus_id_str,
-                                                  nvmlDevice_t *device ) = NULL;
-nvmlReturn_t (*nvmlDeviceGetUUIDPtr)( nvmlDevice_t device, char *uuid,
-                                      unsigned int length ) = NULL;
+static nvmlReturn_t (*nvmlInitPtr)( void );
+static nvmlReturn_t (*nvmlDeviceGetCountPtr)( unsigned int *deviceCount ) = NULL;
+static nvmlReturn_t (*nvmlDeviceGetHandleByPciBusIdPtr)( const char *bus_id_str,
+                                                         nvmlDevice_t *device ) = NULL;
+static nvmlReturn_t (*nvmlDeviceGetUUIDPtr)( nvmlDevice_t device, char *uuid,
+                                             unsigned int length ) = NULL;
 
 #define NVML_CALL(call, err_handle) do {                                        \
     nvmlReturn_t _status = (call);                                              \
@@ -88,8 +81,7 @@ nvmlReturn_t (*nvmlDeviceGetUUIDPtr)( nvmlDevice_t device, char *uuid,
     }                                                                           \
 } while(0)
 
-static void fill_dev_affinity_info( PAPI_gpu_info_u *dev_info, int dev_count );
-static int procs_have_same_gpu_count( int dev_count );
+static void fill_dev_affinity_info( _sysdetect_gpu_info_u *dev_info, int dev_count );
 static int nvml_is_enabled( void );
 static int load_nvml_sym( char *status );
 static int unload_nvml_sym( void );
@@ -98,7 +90,7 @@ static unsigned long hash(unsigned char *str);
 
 #ifdef HAVE_CUDA
 void
-fill_dev_info( PAPI_gpu_info_u *dev_info, int dev )
+fill_dev_info( _sysdetect_gpu_info_u *dev_info, int dev )
 {
     CUdevice device;
     CU_CALL((*cuDeviceGetPtr)(&device,
@@ -209,7 +201,7 @@ load_cuda_sym( char *status )
     if (cuda_dlp == NULL) {
         int count = snprintf(status, PAPI_MAX_STR_LEN, "%s", dlerror());
         if (count >= PAPI_MAX_STR_LEN) {
-            HANDLE_STRING_ERROR;
+            SUBDBG("Status string truncated.");
         }
         status[PAPI_MAX_STR_LEN - 1] = 0;
         return -1;
@@ -224,9 +216,9 @@ load_cuda_sym( char *status )
 
     if (!cuda_is_enabled()) {
         const char *message = "dlsym() of CUDA symbols failed";
-        int count = snprintf(status, strlen(message) + 1, message);
+        int count = snprintf(status, strlen(message) + 1, "%s", message);
         if (count >= PAPI_MAX_STR_LEN) {
-            HANDLE_STRING_ERROR;
+            SUBDBG("Status string truncated.");
         }
         return -1;
     }
@@ -254,88 +246,25 @@ unload_cuda_sym( void )
 
 #ifdef HAVE_NVML
 void
-fill_dev_affinity_info( PAPI_gpu_info_u *info, int dev_count )
+fill_dev_affinity_info( _sysdetect_gpu_info_u *info, int dev_count )
 {
-    struct {
-        unsigned long uid;
-        int global_proc_id;
-    } uid_info;
-
-    int shm_elem_count, shm_handle;
-    if (shm_alloc(sizeof(uid_info), &shm_elem_count, &shm_handle)) {
-        return;
-    }
-
     int dev;
     for (dev = 0; dev < dev_count; ++dev) {
         char bus_id_str[20] = { 0 };
-        CU_CALL((*cuDeviceGetPCIBusIdPtr)(bus_id_str, 20, dev), goto fn_exit);
+        CU_CALL((*cuDeviceGetPCIBusIdPtr)(bus_id_str, 20, dev), return);
 
         nvmlDevice_t device;
         NVML_CALL((*nvmlDeviceGetHandleByPciBusIdPtr)(bus_id_str, &device),
-                  goto fn_exit);
+                  return);
 
-        char uuid_str[NVML_DEVICE_UUID_V2_BUFFER_SIZE] = { 0 };
+        char uuid_str[PAPI_NVML_DEV_BUFFER_SIZE] = { 0 };
         NVML_CALL((*nvmlDeviceGetUUIDPtr)(device, uuid_str,
-                                          NVML_DEVICE_UUID_V2_BUFFER_SIZE),
-                  goto fn_exit);
+                                          PAPI_NVML_DEV_BUFFER_SIZE),
+                  return);
 
-        PAPI_gpu_info_u *dev_info = &info[dev];
+        _sysdetect_gpu_info_u *dev_info = &info[dev];
         dev_info->nvidia.uid = hash((unsigned char *) uuid_str);
-        uid_info.uid = dev_info->nvidia.uid;
-        uid_info.global_proc_id = shm_get_global_proc_id();
-        shm_put(shm_handle, shm_get_local_proc_id(), &uid_info, sizeof(uid_info));
-
-        dev_info->nvidia.affinity.proc_count = shm_elem_count;
-        dev_info->nvidia.affinity.proc_id_arr =
-            papi_malloc(shm_elem_count * sizeof(int));
-
-        int i, count = 0;
-        for (i = 0; i < shm_elem_count; ++i) {
-            shm_get(shm_handle, i, &uid_info, sizeof(uid_info));
-            if (uid_info.uid == dev_info->nvidia.uid) {
-                dev_info->nvidia.affinity.proc_id_arr[count++] =
-                    uid_info.global_proc_id;
-            }
-        }
-
-        if (count < shm_elem_count) {
-            dev_info->nvidia.affinity.proc_count = count;
-            dev_info->nvidia.affinity.proc_id_arr =
-                papi_realloc(dev_info->nvidia.affinity.proc_id_arr,
-                             count * sizeof(int));
-        }
     }
-
-  fn_exit:
-    shm_free(shm_handle);
-}
-
-int
-procs_have_same_gpu_count( int dev_count )
-{
-    int status = 1;
-
-    int shm_handle, shm_elem_count;
-    if (shm_alloc(sizeof(int), &shm_elem_count, &shm_handle)) {
-        return 0;
-    }
-
-    shm_put(shm_handle, shm_get_local_proc_id(), &dev_count, sizeof(dev_count));
-
-    int i;
-    for (i = 0; i < shm_elem_count; ++i) {
-        int others_dev_count;
-        shm_get(shm_handle, i, &others_dev_count, sizeof(others_dev_count));
-        if (dev_count != others_dev_count) {
-            status = 0;
-            break;
-        }
-    }
-
-    shm_free(shm_handle);
-
-    return status;
 }
 
 unsigned long
@@ -367,7 +296,7 @@ load_nvml_sym( char *status )
     if (nvml_dlp == NULL) {
         int count = snprintf(status, PAPI_MAX_STR_LEN, "%s", dlerror());
         if (count >= PAPI_MAX_STR_LEN) {
-            HANDLE_STRING_ERROR;
+            SUBDBG("Status string truncated.");
         }
         status[PAPI_MAX_STR_LEN - 1] = 0;
         return -1;
@@ -380,9 +309,9 @@ load_nvml_sym( char *status )
 
     if (!nvml_is_enabled()) {
         const char *message = "dlsym() of NVML symbols failed";
-        int count = snprintf(status, strlen(message) + 1, message);
+        int count = snprintf(status, strlen(message) + 1, "%s", message);
         if (count >= PAPI_MAX_STR_LEN) {
-            HANDLE_STRING_ERROR;
+            SUBDBG("Status string truncated.");
         }
         return -1;
     }
@@ -407,10 +336,10 @@ unload_nvml_sym( void )
 #endif /* HAVE_NVML */
 
 void
-open_nvidia_gpu_dev_type( PAPI_dev_type_info_t *dev_type_info )
+open_nvidia_gpu_dev_type( _sysdetect_dev_type_info_t *dev_type_info )
 {
     memset(dev_type_info, 0, sizeof(*dev_type_info));
-    dev_type_info->id = PAPI_DEV_TYPE_ID__NVIDIA_GPU;
+    dev_type_info->id = PAPI_DEV_TYPE_ID__CUDA;
     strcpy(dev_type_info->vendor, "NVIDIA");
     strcpy(dev_type_info->status, "Device Initialized");
 
@@ -426,50 +355,37 @@ open_nvidia_gpu_dev_type( PAPI_dev_type_info_t *dev_type_info )
         return;
     }
 
-    PAPI_gpu_info_u *arr = papi_calloc(dev_count, sizeof(*arr));
+    _sysdetect_gpu_info_u *arr = papi_calloc(dev_count, sizeof(*arr));
     for (dev = 0; dev < dev_count; ++dev) {
         fill_dev_info(&arr[dev], dev);
     }
 
 #ifdef HAVE_NVML
-    if (!load_nvml_sym(dev_type_info->status) &&
-        !shm_init(dev_type_info->status)) {
-        if (procs_have_same_gpu_count(dev_count)) {
-            fill_dev_affinity_info(arr, dev_count);
-        }
-
+    if (!load_nvml_sym(dev_type_info->status)) {
+        fill_dev_affinity_info(arr, dev_count);
         unload_nvml_sym();
-        shm_shutdown();
     }
 #else
     const char *message = "NVML not configured, no device affinity available";
-    int count = snprintf(dev_type_info->status, strlen(message) + 1, message);
+    int count = snprintf(dev_type_info->status, strlen(message) + 1, "%s", message);
     if (count >= PAPI_MAX_STR_LEN) {
-        HANDLE_STRING_ERROR;
+        SUBDBG("Status string truncated.");
     }
 #endif /* HAVE_NVML */
 
     unload_cuda_sym();
-    dev_type_info->dev_info_arr = (PAPI_dev_info_u *)arr;
+    dev_type_info->dev_info_arr = (_sysdetect_dev_info_u *)arr;
 #else
     const char *message = "CUDA not configured, no CUDA device available";
-    int count = snprintf(dev_type_info->status, strlen(message) + 1, message);
+    int count = snprintf(dev_type_info->status, strlen(message) + 1, "%s", message);
     if (count >= PAPI_MAX_STR_LEN) {
-        HANDLE_STRING_ERROR;
+        SUBDBG("Status string truncated.");
     }
 #endif /* HAVE_CUDA */
 }
 
 void
-close_nvidia_gpu_dev_type( PAPI_dev_type_info_t *dev_type_info )
+close_nvidia_gpu_dev_type( _sysdetect_dev_type_info_t *dev_type_info )
 {
-    int i;
-    for (i = 0; i < dev_type_info->num_devices; ++i) {
-        PAPI_gpu_info_u *dev_info =
-            ((PAPI_gpu_info_u *)dev_type_info->dev_info_arr) + i;
-        if (dev_info->nvidia.affinity.proc_count > 0) {
-            papi_free(dev_info->nvidia.affinity.proc_id_arr);
-        }
-    }
     papi_free(dev_type_info->dev_info_arr);
 }

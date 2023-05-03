@@ -17,13 +17,6 @@
 
 #include "sysdetect.h"
 #include "amd_gpu.h"
-#include "shm.h"
-
-#define HANDLE_STRING_ERROR {                                    \
-    fprintf(stderr, "%s:%i unexpected string function error.\n", \
-            __FILE__, __LINE__);                                 \
-    exit(-1);                                                    \
-}
 
 #ifdef HAVE_ROCM
 #include "hsa.h"
@@ -31,23 +24,23 @@
 
 static void *rocm_dlp = NULL;
 
-hsa_status_t (*hsa_initPtr)( void ) = NULL;
-hsa_status_t (*hsa_shut_downPtr)( void ) = NULL;
-hsa_status_t (*hsa_iterate_agentsPtr)( hsa_status_t (*)(hsa_agent_t agent,
-                                                        void *value),
-                                       void *value ) = NULL;
-hsa_status_t (*hsa_agent_get_infoPtr)( hsa_agent_t agent,
-                                       hsa_agent_info_t attribute,
-                                       void *value ) = NULL;
-hsa_status_t (*hsa_amd_agent_iterate_memory_poolsPtr)( hsa_agent_t agent,
-                                                       hsa_status_t (*)(hsa_amd_memory_pool_t pool,
-                                                                        void *value),
-                                                       void *value ) = NULL;
-hsa_status_t (*hsa_amd_memory_pool_get_infoPtr)( hsa_amd_memory_pool_t pool,
-                                                 hsa_amd_memory_pool_info_t attribute,
-                                                 void *value ) = NULL;
-hsa_status_t (*hsa_status_stringPtr)( hsa_status_t status,
-                                      const char **string ) = NULL;
+static hsa_status_t (*hsa_initPtr)( void ) = NULL;
+static hsa_status_t (*hsa_shut_downPtr)( void ) = NULL;
+static hsa_status_t (*hsa_iterate_agentsPtr)( hsa_status_t (*)(hsa_agent_t agent,
+                                                               void *value),
+                                              void *value ) = NULL;
+static hsa_status_t (*hsa_agent_get_infoPtr)( hsa_agent_t agent,
+                                              hsa_agent_info_t attribute,
+                                              void *value ) = NULL;
+static hsa_status_t (*hsa_amd_agent_iterate_memory_poolsPtr)( hsa_agent_t agent,
+                                                              hsa_status_t (*)(hsa_amd_memory_pool_t pool,
+                                                                               void *value),
+                                                              void *value ) = NULL;
+static hsa_status_t (*hsa_amd_memory_pool_get_infoPtr)( hsa_amd_memory_pool_t pool,
+                                                        hsa_amd_memory_pool_info_t attribute,
+                                                        void *value ) = NULL;
+static hsa_status_t (*hsa_status_stringPtr)( hsa_status_t status,
+                                             const char **string ) = NULL;
 
 #define ROCM_CALL(call, err_handle) do {   \
     hsa_status_t _status = (call);         \
@@ -62,7 +55,7 @@ static hsa_status_t get_device_count( int *count );
 static hsa_status_t get_device_memory( hsa_amd_memory_pool_t pool, void *info );
 static hsa_status_t get_device_properties( hsa_agent_t agent, void *info );
 
-static void fill_dev_info( PAPI_gpu_info_u *dev_info );
+static void fill_dev_info( _sysdetect_gpu_info_u *dev_info );
 static int hsa_is_enabled( void );
 static int load_hsa_sym( char *status );
 static int unload_hsa_sym( void );
@@ -73,9 +66,9 @@ static int unload_hsa_sym( void );
 
 static void *rsmi_dlp = NULL;
 
-rsmi_status_t (*rsmi_initPtr)( unsigned long init_flags ) = NULL;
-rsmi_status_t (*rsmi_shut_downPtr)( void ) = NULL;
-rsmi_status_t (*rsmi_dev_pci_id_getPtr)( unsigned int dev_idx, unsigned long *bdfid ) = NULL;
+static rsmi_status_t (*rsmi_initPtr)( unsigned long init_flags ) = NULL;
+static rsmi_status_t (*rsmi_shut_downPtr)( void ) = NULL;
+static rsmi_status_t (*rsmi_dev_pci_id_getPtr)( unsigned int dev_idx, unsigned long *bdfid ) = NULL;
 
 #define ROCM_SMI_CALL(call, err_handle) do {    \
     rsmi_status_t _status = (call);             \
@@ -84,8 +77,7 @@ rsmi_status_t (*rsmi_dev_pci_id_getPtr)( unsigned int dev_idx, unsigned long *bd
     err_handle;                                 \
 } while(0)
 
-static void fill_dev_affinity_info( PAPI_gpu_info_u *dev_info, int dev_count );
-static int procs_have_same_gpu_count( int dev_count );
+static void fill_dev_affinity_info( _sysdetect_gpu_info_u *dev_info, int dev_count );
 static int rsmi_is_enabled( void );
 static int load_rsmi_sym( char *status );
 static int unload_rsmi_sym( void );
@@ -123,7 +115,7 @@ hsa_status_t
 get_device_memory( hsa_amd_memory_pool_t pool, void *info )
 {
     hsa_region_segment_t seg_info;
-    PAPI_gpu_info_u *dev_info = info;
+    _sysdetect_gpu_info_u *dev_info = info;
 
     ROCM_CALL((*hsa_amd_memory_pool_get_infoPtr)(pool,
                                                  HSA_AMD_MEMORY_POOL_INFO_SEGMENT,
@@ -152,7 +144,7 @@ get_device_properties( hsa_agent_t agent, void *info )
 
     if (type == HSA_DEVICE_TYPE_GPU) {
         /* query attributes for this device */
-        PAPI_gpu_info_u *dev_info = &((PAPI_gpu_info_u *) info)[count];
+        _sysdetect_gpu_info_u *dev_info = &((_sysdetect_gpu_info_u *) info)[count];
 
         ROCM_CALL((*hsa_agent_get_infoPtr)(agent,
                                            HSA_AGENT_INFO_NAME,
@@ -184,15 +176,15 @@ get_device_properties( hsa_agent_t agent, void *info )
                                            HSA_AGENT_INFO_VERSION_MINOR,
                                            &dev_info->amd.minor),
                   return _status);
-        ROCM_CALL((*hsa_agent_get_infoPtr)(agent,
+        ROCM_CALL((*hsa_agent_get_infoPtr)(agent, (hsa_agent_info_t)
                                            HSA_AMD_AGENT_INFO_NUM_SIMDS_PER_CU,
                                            &dev_info->amd.simd_per_compute_unit),
                   return _status);
-        ROCM_CALL((*hsa_agent_get_infoPtr)(agent,
+        ROCM_CALL((*hsa_agent_get_infoPtr)(agent, (hsa_agent_info_t)
                                            HSA_AMD_AGENT_INFO_COMPUTE_UNIT_COUNT,
                                            &dev_info->amd.compute_unit_count),
                   return _status);
-        ROCM_CALL((*hsa_agent_get_infoPtr)(agent,
+        ROCM_CALL((*hsa_agent_get_infoPtr)(agent, (hsa_agent_info_t)
                                            HSA_AMD_AGENT_INFO_MAX_WAVES_PER_CU,
                                            &dev_info->amd.max_waves_per_compute_unit),
                   return _status);
@@ -215,9 +207,9 @@ get_device_properties( hsa_agent_t agent, void *info )
 }
 
 void
-fill_dev_info( PAPI_gpu_info_u *dev_info )
+fill_dev_info( _sysdetect_gpu_info_u *dev_info )
 {
-    hsa_status_t status;
+    hsa_status_t status = HSA_STATUS_SUCCESS;
     const char *string = NULL;
 
     ROCM_CALL((*hsa_iterate_agentsPtr)(&get_device_properties, dev_info),
@@ -249,9 +241,9 @@ load_hsa_sym( char *status )
     if (rocm_root == NULL) {
         const char *message =
             "Can't load libhsa-runtime64.so, PAPI_ROCM_ROOT not set.";
-        int count = snprintf(status, strlen(message) + 1, message);
+        int count = snprintf(status, strlen(message) + 1, "%s", message);
         if (count >= PAPI_MAX_STR_LEN) {
-            HANDLE_STRING_ERROR;
+            SUBDBG("Status string truncated.");
         }
         return -1;
     }
@@ -259,14 +251,14 @@ load_hsa_sym( char *status )
     int expect = snprintf(pathname, PAPI_MAX_STR_LEN,
                           "%s/lib/libhsa-runtime64.so", rocm_root);
     if (expect > PAPI_MAX_STR_LEN) {
-        HANDLE_STRING_ERROR;
+        SUBDBG("HSA pathname truncated.");
     }
 
     rocm_dlp = dlopen(pathname, RTLD_NOW | RTLD_GLOBAL);
     if (rocm_dlp == NULL) {
         int count = snprintf(status, PAPI_MAX_STR_LEN, "%s", dlerror());
         if (count >= PAPI_MAX_STR_LEN) {
-            HANDLE_STRING_ERROR;
+            SUBDBG("Status string truncated.");
         }
         status[PAPI_MAX_STR_LEN - 1] = 0;
         return -1;
@@ -283,9 +275,9 @@ load_hsa_sym( char *status )
     if (!hsa_is_enabled() || (*hsa_initPtr)()) {
         const char *message = "dlsym() of HSA symbols failed or hsa_init() "
                               "failed";
-        int count = snprintf(status, strlen(message) + 1, message);
+        int count = snprintf(status, strlen(message) + 1, "%s", message);
         if (count >= PAPI_MAX_STR_LEN) {
-            HANDLE_STRING_ERROR;
+            SUBDBG("Status string truncated.");
         }
         return -1;
     }
@@ -315,79 +307,16 @@ unload_hsa_sym( void )
 
 #ifdef HAVE_ROCM_SMI
 void
-fill_dev_affinity_info( PAPI_gpu_info_u *info, int dev_count )
+fill_dev_affinity_info( _sysdetect_gpu_info_u *info, int dev_count )
 {
-    struct {
-        unsigned long uid;
-        int global_proc_id;
-    } uid_info;
-
-    int shm_elem_count, shm_handle;
-    if (shm_alloc(sizeof(uid_info), &shm_elem_count, &shm_handle)) {
-        return;
-    }
-
     int dev;
     for (dev = 0; dev < dev_count; ++dev) {
         unsigned long uid;
-        ROCM_SMI_CALL((*rsmi_dev_pci_id_getPtr)(dev, &uid), goto fn_exit);
+        ROCM_SMI_CALL((*rsmi_dev_pci_id_getPtr)(dev, &uid), return);
 
-        PAPI_gpu_info_u *dev_info = &info[dev];
+        _sysdetect_gpu_info_u *dev_info = &info[dev];
         dev_info->amd.uid = uid;
-        uid_info.uid = uid;
-        uid_info.global_proc_id = shm_get_global_proc_id();
-        shm_put(shm_handle, shm_get_local_proc_id(), &uid_info, sizeof(uid_info));
-
-        dev_info->amd.affinity.proc_count = shm_elem_count;
-        dev_info->amd.affinity.proc_id_arr =
-            papi_malloc(shm_elem_count * sizeof(int));
-
-        int i, count = 0;
-        for (i = 0; i < shm_elem_count; ++i) {
-            shm_get(shm_handle, i, &uid_info, sizeof(uid_info));
-            if (uid_info.uid == dev_info->amd.uid) {
-                dev_info->amd.affinity.proc_id_arr[count++] =
-                    uid_info.global_proc_id;
-            }
-        }
-
-        if (count < shm_elem_count) {
-            dev_info->amd.affinity.proc_count = count;
-            dev_info->amd.affinity.proc_id_arr =
-                papi_realloc(dev_info->amd.affinity.proc_id_arr,
-                             count * sizeof(int));
-        }
     }
-
-  fn_exit:
-    shm_free(shm_handle);
-}
-
-int
-procs_have_same_gpu_count( int dev_count )
-{
-    int status = 1;
-
-    int shm_handle, shm_elem_count;
-    if (shm_alloc(sizeof(int), &shm_elem_count, &shm_handle)) {
-        return 0;
-    }
-
-    shm_put(shm_handle, shm_get_local_proc_id(), &dev_count, sizeof(dev_count));
-
-    int i;
-    for (i = 0; i < shm_elem_count; ++i) {
-        int others_dev_count;
-        shm_get(shm_handle, i, &others_dev_count, sizeof(others_dev_count));
-        if (dev_count != others_dev_count) {
-            status = 0;
-            break;
-        }
-    }
-
-    shm_free(shm_handle);
-
-    return status;
 }
 
 int
@@ -406,9 +335,9 @@ load_rsmi_sym( char *status )
     if (rocm_root == NULL) {
         const char *message =
             "Can't load librocm_smi64.so, PAPI_ROCM_ROOT not set.";
-        int count = snprintf(status, strlen(message) + 1, message);
+        int count = snprintf(status, strlen(message) + 1, "%s", message);
         if (count >= PAPI_MAX_STR_LEN) {
-            HANDLE_STRING_ERROR;
+            SUBDBG("Status string truncated.");
         }
         return -1;
     }
@@ -416,14 +345,14 @@ load_rsmi_sym( char *status )
     int expect = snprintf(pathname, PAPI_MAX_STR_LEN,
                           "%s/rocm_smi/lib/librocm_smi64.so", rocm_root);
     if (expect > PAPI_MAX_STR_LEN) {
-        HANDLE_STRING_ERROR;
+        SUBDBG("ROCM-SMI pathname truncated.");
     }
 
     rsmi_dlp = dlopen(pathname, RTLD_NOW | RTLD_GLOBAL);
     if (rsmi_dlp == NULL) {
         int count = snprintf(status, PAPI_MAX_STR_LEN, "%s", dlerror());
         if (count >= PAPI_MAX_STR_LEN) {
-            HANDLE_STRING_ERROR;
+            SUBDBG("Status string truncated.");
         }
         status[PAPI_MAX_STR_LEN - 1] = 0;
         return -1;
@@ -436,9 +365,9 @@ load_rsmi_sym( char *status )
     if (!rsmi_is_enabled() || (*rsmi_initPtr)(0)) {
         const char *message = "dlsym() of RSMI symbols failed or rsmi_init() "
                               "failed";
-        int count = snprintf(status, strlen(message) + 1, message);
+        int count = snprintf(status, strlen(message) + 1, "%s", message);
         if (count >= PAPI_MAX_STR_LEN) {
-            HANDLE_STRING_ERROR;
+            SUBDBG("Status string truncated.");
         }
         return -1;
     }
@@ -463,10 +392,10 @@ unload_rsmi_sym( void )
 #endif /* HAVE_ROCM_SMI */
 
 void
-open_amd_gpu_dev_type( PAPI_dev_type_info_t *dev_type_info )
+open_amd_gpu_dev_type( _sysdetect_dev_type_info_t *dev_type_info )
 {
     memset(dev_type_info, 0, sizeof(*dev_type_info));
-    dev_type_info->id = PAPI_DEV_TYPE_ID__AMD_GPU;
+    dev_type_info->id = PAPI_DEV_TYPE_ID__ROCM;
     strcpy(dev_type_info->vendor, "AMD/ATI");
     strcpy(dev_type_info->status, "Device Initialized");
 
@@ -487,48 +416,35 @@ open_amd_gpu_dev_type( PAPI_dev_type_info_t *dev_type_info )
     }
     dev_type_info->num_devices = dev_count;
 
-    PAPI_gpu_info_u *arr = papi_calloc(dev_count, sizeof(*arr));
+    _sysdetect_gpu_info_u *arr = papi_calloc(dev_count, sizeof(*arr));
     fill_dev_info(arr);
 
 #ifdef HAVE_ROCM_SMI
-    if (!load_rsmi_sym(dev_type_info->status) &&
-        !shm_init(dev_type_info->status)) {
-        if (procs_have_same_gpu_count(dev_count)) {
-            fill_dev_affinity_info(arr, dev_count);
-        }
-
+    if (!load_rsmi_sym(dev_type_info->status)) {
+        fill_dev_affinity_info(arr, dev_count);
         unload_rsmi_sym();
-        shm_shutdown();
     }
 #else
     const char *message = "RSMI not configured, no device affinity available";
-    int count = snprintf(dev_type_info->status, strlen(message) + 1, message);
+    int count = snprintf(dev_type_info->status, strlen(message) + 1, "%s", message);
     if (count >= PAPI_MAX_STR_LEN) {
-        HANDLE_STRING_ERROR;
+        SUBDBG("Error message truncated.");
     }
 #endif /* HAVE_ROCM_SMI */
 
     unload_hsa_sym();
-    dev_type_info->dev_info_arr = (PAPI_dev_info_u *)arr;
+    dev_type_info->dev_info_arr = (_sysdetect_dev_info_u *)arr;
 #else
     const char *message = "ROCm not configured, no ROCm device available";
-    int count = snprintf(dev_type_info->status, strlen(message) + 1, message);
+    int count = snprintf(dev_type_info->status, strlen(message) + 1, "%s", message);
     if (count >= PAPI_MAX_STR_LEN) {
-        HANDLE_STRING_ERROR;
+        SUBDBG("Error message truncated.");
     }
 #endif /* HAVE_ROCM */
 }
 
 void
-close_amd_gpu_dev_type( PAPI_dev_type_info_t *dev_type_info )
+close_amd_gpu_dev_type( _sysdetect_dev_type_info_t *dev_type_info )
 {
-    int i;
-    for (i = 0; i < dev_type_info->num_devices; ++i) {
-        PAPI_gpu_info_u *dev_info =
-            ((PAPI_gpu_info_u *)dev_type_info->dev_info_arr) + i;
-        if (dev_info->amd.affinity.proc_count > 0) {
-            papi_free(dev_info->amd.affinity.proc_id_arr);
-        }
-    }
     papi_free(dev_type_info->dev_info_arr);
 }

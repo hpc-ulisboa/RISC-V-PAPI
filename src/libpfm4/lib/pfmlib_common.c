@@ -30,6 +30,9 @@
  * Copyright (c) 2001-2006 Hewlett-Packard Development Company, L.P.
  * Contributed by Stephane Eranian <eranian@hpl.hp.com>
  *
+ * Copyright (c) 2022, NVIDIA CORPORATION & AFFILIATES.
+ * Contributed by John Linford <jlinford@nvidia.com>
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -104,6 +107,7 @@ static pfmlib_pmu_t *pfmlib_pmus[]=
 	&amd64_fam17h_zen1_support,
 	&amd64_fam17h_zen2_support,
 	&amd64_fam19h_zen3_support,
+	&amd64_fam19h_zen4_support,
 	&amd64_fam19h_zen3_l3_support,
 	&amd64_rapl_support,
 	&intel_core_support,
@@ -485,6 +489,7 @@ static pfmlib_pmu_t *pfmlib_pmus[]=
 	&power7_support,
 	&power8_support,
 	&power9_support,
+	&power10_support,
 	&torrent_support,
     &powerpc_nest_mcs_read_support,
     &powerpc_nest_mcs_write_support,
@@ -523,6 +528,8 @@ static pfmlib_pmu_t *pfmlib_pmus[]=
 	&arm_thunderx2_ccpi1_support,
 	&arm_n1_support,
 	&arm_n2_support,
+	&arm_v1_support,
+	&arm_v2_support,
 	&arm_hisilicon_kunpeng_support,
 	&arm_hisilicon_kunpeng_sccl1_ddrc0_support,
 	&arm_hisilicon_kunpeng_sccl1_ddrc1_support,
@@ -651,6 +658,8 @@ static pfmlib_pmu_t *pfmlib_pmus[]=
 	&arm_hisilicon_kunpeng_sccl7_l3c23_support,
 	&arm_n1_support,
 	&arm_n2_support,
+	&arm_v1_support,
+	&arm_v2_support,
 	&arm_hisilicon_kunpeng_support,
 #endif
 

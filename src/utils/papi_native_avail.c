@@ -19,7 +19,8 @@
  *	@section Options
  * <ul>
  * <li>--help, -h    print this help message
- * <li>--check, -c    print this help message
+ * <li>--check, -c   attempts to add each event
+ * <li>-sde FILE     lists SDEs that are registered by the library or executable in FILE
  * <li>-e EVENTNAME  display detailed information about named native event
  * <li>-i EVENTSTR   include only event names that contain EVENTSTR
  * <li>-x EVENTSTR   exclude any event names that contain EVENTSTR
@@ -52,9 +53,7 @@
 #include "papi.h"
 #include "print_header.h"
 #if SDE
-#define STATIC_SDE
-#define EXCLUDE_SDE_COMMON
-#include "components/sde/sde_lib/sde_lib.h"
+#include "sde_lib/sde_lib.h"
 #endif
 
 #define EVT_LINE 80
@@ -88,9 +87,7 @@ print_help( char **argv )
 	printf( "\nGeneral command options:\n" );
 	printf( "\t-h, --help       print this help message\n" );
 	printf( "\t-c, --check      attempts to add each event\n");
-#if SDE
 	printf( "\t-sde FILE        lists SDEs that are registered by the library or executable in FILE\n" );
-#endif
 	printf( "\t-e EVENTNAME     display detailed information about named native event\n" );
 	printf( "\t-i EVENTSTR      include only event names that contain EVENTSTR\n" );
 	printf( "\t-x EVENTSTR      exclude any event names that contain EVENTSTR\n" );
@@ -145,7 +142,9 @@ parse_args( int argc, char **argv, command_flags_t * f )
 				printf( "Invalid argument for -e\n");
 				exit(1);
 			}
-		} else if ( !strcmp( argv[i], "-sde" ) ) {
+		}
+#if SDE
+		else if ( !strcmp( argv[i], "-sde" ) ) {
 			f->list_sdes = 1;
 			i++;
 			if ( i < argc )
@@ -154,7 +153,9 @@ parse_args( int argc, char **argv, command_flags_t * f )
 				printf( "Invalid argument for -sde\n");
 				exit(1);
 			}
-		} else if ( !strcmp( argv[i], "-i" ) ) {
+		}
+#endif
+		else if ( !strcmp( argv[i], "-i" ) ) {
 			f->include = 1;
 			i++;
 			if ( i < argc )

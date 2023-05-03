@@ -245,7 +245,7 @@
 
 /* This is the official PAPI version */
 /* The final digit represents the patch count */
-#define PAPI_VERSION  			PAPI_VERSION_NUMBER(6,0,0,1)
+#define PAPI_VERSION  			PAPI_VERSION_NUMBER(7,0,1,0)
 #define PAPI_VER_CURRENT 		(PAPI_VERSION & 0xffff0000)
 
   /* Tests for checking event code type */
@@ -300,8 +300,9 @@ failure.
 #define PAPI_ECOUNT		-23    /**< Too many events or attributes */
 #define PAPI_ECOMBO		-24    /**< Bad combination of features */
 #define PAPI_ECMP_DISABLED	-25    /**< Component containing event is disabled */
-#define PAPI_EDELAY_INIT -26
-#define PAPI_NUM_ERRORS	 27    /**< Number of error messages specified in this API */
+#define PAPI_EDELAY_INIT -26   /**< Delayed initialization component */
+#define PAPI_EMULPASS   -27    /**< Event exists, but cannot be counted due to multiple passes required by hardware */
+#define PAPI_NUM_ERRORS	 28    /**< Number of error messages specified in this API */
 
 #define PAPI_NOT_INITED		0
 #define PAPI_LOW_LEVEL_INITED 	1       /* Low level has called library init */
@@ -466,8 +467,6 @@ All of the functions in the PerfAPI should use the following set of constants.
 #define PAPI_DEFGRN  		6       /**< Granularity for all new eventsets */
 #define PAPI_GRANUL  		7       /**< Granularity for an eventset */
 #define PAPI_DEF_MPX_NS     8       /**< Multiplexing/overflowing interval in ns, same as PAPI_DEF_ITIMER_NS */
-  //#define PAPI_EDGE_DETECT    9       /**< Count cycles of events if supported [not implemented] */
-  //#define PAPI_INVERT         10		/**< Invert count detect if supported [not implemented] */
 #define PAPI_MAX_MPX_CTRS	11      /**< Maximum number of counters we can multiplex */
 #define PAPI_PROFIL  		12      /**< Option to turn on the overflow/profil reporting software [not implemented] */
 #define PAPI_PRELOAD 		13      /**< Option to find out the environment variable that can preload libraries */
@@ -598,22 +597,13 @@ read the documentation carefully.  */
   typedef void (*PAPI_overflow_handler_t) (int EventSet, void *address,
                                 long long overflow_vector, void *context);
 
-        /* Handle C99 and more recent compilation */
-	/* caddr_t was never approved by POSIX and is obsolete */
-	/* We should probably switch all caddr_t to void * or long */
-#ifdef __STDC_VERSION__
-  #if (__STDC_VERSION__ >= 199901L)
-	typedef char *caddr_t;
-  #else
-
-  #endif
-#endif
+typedef void *vptr_t;
 
 	/** @ingroup papi_data_structures */
    typedef struct _papi_sprofil {
       void *pr_base;          /**< buffer base */
       unsigned pr_size;       /**< buffer size */
-      caddr_t pr_off;         /**< pc start address (offset) */
+      vptr_t pr_off;         /**< pc start address (offset) */
       unsigned pr_scale;      /**< pc scaling factor: 
                                  fixed point fraction
                                  0xffff ~= 1, 0x8000 == .5, 0x4000 == .25, etc.
@@ -665,7 +655,7 @@ read the documentation carefully.  */
      char version[PAPI_MIN_STR_LEN];         /**< Version of this component */
      char support_version[PAPI_MIN_STR_LEN]; /**< Version of the support library */
      char kernel_version[PAPI_MIN_STR_LEN];  /**< Version of the kernel PMC support driver */
-     char disabled_reason[PAPI_MAX_STR_LEN]; /**< Reason for failure of initialization */
+     char disabled_reason[PAPI_HUGE_STR_LEN]; /**< Reason for failure of initialization */
      int disabled;   /**< 0 if enabled, otherwise error code from initialization */
      int initialized;                        /**< Component is ready to use */
      int CmpIdx;				/**< Index into the vector array for this component; set at init time */
@@ -678,7 +668,6 @@ read the documentation carefully.  */
      int default_granularity;     /**< The default granularity when this component is used */
      int available_granularities; /**< Available granularities */
      int hardware_intr_sig;       /**< Signal used by hardware to deliver PMC events */
-//   int opcode_match_width;      /**< Width of opcode matcher if exists, 0 if not */
      int component_type;          /**< Type of component */
      char *pmu_names[PAPI_PMU_MAX];         /**< list of pmu names supported by this component */
      int reserved[8];             /* */
@@ -687,25 +676,16 @@ read the documentation carefully.  */
      unsigned int posix1b_timers:1;        /**< Using POSIX 1b interval timers (timer_create) instead of setitimer */
      unsigned int kernel_profile:1;        /**< Has kernel profiling support (buffered interrupts or sprofil-like) */
      unsigned int kernel_multiplex:1;      /**< In kernel multiplexing */
-//   unsigned int data_address_range:1;    /**< Supports data address range limiting */
-//   unsigned int instr_address_range:1;   /**< Supports instruction address range limiting */
      unsigned int fast_counter_read:1;     /**< Supports a user level PMC read instruction */
      unsigned int fast_real_timer:1;       /**< Supports a fast real timer */
      unsigned int fast_virtual_timer:1;    /**< Supports a fast virtual timer */
      unsigned int attach:1;                /**< Supports attach */
      unsigned int attach_must_ptrace:1;	   /**< Attach must first ptrace and stop the thread/process*/
-//   unsigned int edge_detect:1;           /**< Supports edge detection on events */
-//   unsigned int invert:1;                /**< Supports invert detection on events */
-//   unsigned int profile_ear:1;      	   /**< Supports data/instr/tlb miss address sampling */
-//     unsigned int cntr_groups:1;           /**< Underlying hardware uses counter groups (e.g. POWER5)*/
      unsigned int cntr_umasks:1;           /**< counters have unit masks */
-//   unsigned int cntr_IEAR_events:1;      /**< counters support instr event addr register */
-//   unsigned int cntr_DEAR_events:1;      /**< counters support data event addr register */
-//   unsigned int cntr_OPCM_events:1;      /**< counter events support opcode matching */
      /* This should be a granularity option */
      unsigned int cpu:1;                   /**< Supports specifying cpu number to use with event set */
      unsigned int inherit:1;               /**< Supports child processes inheriting parents counters */
-     unsigned int reserved_bits:12;
+     unsigned int reserved_bits:19;
    } PAPI_component_info_t;
 
 /**  @ingroup papi_data_structures*/
@@ -727,12 +707,12 @@ read the documentation carefully.  */
 	@brief get the executable's address space info */
    typedef struct _papi_address_map {
       char name[PAPI_HUGE_STR_LEN];
-      caddr_t text_start;       /**< Start address of program text segment */
-      caddr_t text_end;         /**< End address of program text segment */
-      caddr_t data_start;       /**< Start address of program data segment */
-      caddr_t data_end;         /**< End address of program data segment */
-      caddr_t bss_start;        /**< Start address of program bss segment */
-      caddr_t bss_end;          /**< End address of program bss segment */
+      vptr_t text_start;       /**< Start address of program text segment */
+      vptr_t text_end;         /**< End address of program text segment */
+      vptr_t data_start;       /**< Start address of program data segment */
+      vptr_t data_end;         /**< End address of program data segment */
+      vptr_t bss_start;        /**< Start address of program bss segment */
+      vptr_t bss_end;          /**< End address of program bss segment */
    } PAPI_address_map_t;
 
 /** @ingroup papi_data_structures
@@ -772,9 +752,14 @@ typedef char* PAPI_user_defined_events_file_t;
 #define PAPI_MH_TYPE_UNKNOWN  0x000
 #define PAPI_MH_TYPE_LRU      0x100
 #define PAPI_MH_TYPE_PSEUDO_LRU 0x200
+#define PAPI_MH_TYPE_FIFO     0x400
 #define PAPI_MH_CACHE_REPLACEMENT_POLICY(a) (a & 0xf00)
 #define PAPI_MH_TYPE_TLB       0x1000  /* tlb, not memory cache */
 #define PAPI_MH_TYPE_PREF      0x2000  /* prefetch buffer */
+#define PAPI_MH_TYPE_RD_ALLOC       0x10000	/* read-allocation cache */
+#define PAPI_MH_TYPE_WR_ALLOC       0x20000	/* write-allocation cache */
+#define PAPI_MH_TYPE_RW_ALLOC       0x40000	/* read-write-allocation cache */
+#define PAPI_MH_CACHE_ALLOCATION_POLICY(a) (a & 0xf0000)
 #define PAPI_MH_MAX_LEVELS    6		   /* # descriptors for each TLB or cache level */
 #define PAPI_MAX_MEM_HIERARCHY_LEVELS 	  4
 
@@ -807,108 +792,6 @@ typedef char* PAPI_user_defined_events_file_t;
       int levels;
       PAPI_mh_level_t level[PAPI_MAX_MEM_HIERARCHY_LEVELS];
    } PAPI_mh_info_t;
-
-/** @ingroup papi_data_structures */
-    typedef enum {
-        PAPI_DEV_TYPE_ID__CPU,
-        PAPI_DEV_TYPE_ID__NVIDIA_GPU,
-        PAPI_DEV_TYPE_ID__AMD_GPU,
-        PAPI_DEV_TYPE_ID__MAX_NUM,
-    } PAPI_dev_type_id_e;
-
-/** @ingroup papi_data_structures */
-    typedef union _papi_gpu_info {
-        struct {
-            unsigned long uid;
-            char name[PAPI_2MAX_STR_LEN];
-            int warp_size;
-            int max_threads_per_block;
-            int max_blocks_per_multi_proc;
-            int max_shmmem_per_block;
-            int max_shmmem_per_multi_proc;
-            int max_block_dim_x;
-            int max_block_dim_y;
-            int max_block_dim_z;
-            int max_grid_dim_x;
-            int max_grid_dim_y;
-            int max_grid_dim_z;
-            int multi_processor_count;
-            int multi_kernel_per_ctx;
-            int can_map_host_mem;
-            int can_overlap_comp_and_data_xfer;
-            int unified_addressing;
-            int managed_memory;
-            int major;
-            int minor;
-            struct {
-                int proc_count;
-                int *proc_id_arr;
-            } affinity;
-        } nvidia;
-
-        struct {
-            unsigned long uid;
-            char name[PAPI_2MAX_STR_LEN];
-            unsigned int wavefront_size;
-            unsigned int simd_per_compute_unit;
-            unsigned int max_threads_per_workgroup;
-            unsigned int max_waves_per_compute_unit;
-            unsigned int max_shmmem_per_workgroup;
-            unsigned short max_workgroup_dim_x;
-            unsigned short max_workgroup_dim_y;
-            unsigned short max_workgroup_dim_z;
-            unsigned int max_grid_dim_x;
-            unsigned int max_grid_dim_y;
-            unsigned int max_grid_dim_z;
-            unsigned int compute_unit_count;
-            unsigned int major;
-            unsigned int minor;
-            struct {
-                int proc_count;
-                int *proc_id_arr;
-            } affinity;
-        } amd;
-    } PAPI_gpu_info_u;
-
-/** #ingroup papi_data_structures */
-    typedef struct _papi_cache_level_info {
-        int num_caches;
-        PAPI_mh_cache_info_t cache[PAPI_MH_MAX_LEVELS];
-    } PAPI_cache_level_info_t;
-
-/** @ingroup papi_data_structures */
-    typedef struct _papi_cpu_info {
-        char name[PAPI_MAX_STR_LEN];
-        int cpuid_family;
-        int cpuid_model;
-        int cpuid_stepping;
-        int sockets;
-        int numas;
-        int cores;
-        int threads;
-        int cache_levels;
-        PAPI_cache_level_info_t clevel[PAPI_MAX_MEM_HIERARCHY_LEVELS];
-#define PAPI_MAX_NUM_NODES 32
-        int numa_memory[PAPI_MAX_NUM_NODES];
-#define PAPI_MAX_NUM_THREADS 512
-        int numa_affinity[PAPI_MAX_NUM_THREADS];
-    } PAPI_cpu_info_t;
-
-/** #ingroup papi_data_structures */
-    typedef union _papi_dev_info_u {
-        PAPI_gpu_info_u gpu;
-        PAPI_cpu_info_t cpu;
-    } PAPI_dev_info_u;
-
-/** @ingroup papi_data_structures */
-    typedef struct _papi_dev_type_info {
-        PAPI_dev_type_id_e id;
-        char vendor[PAPI_MAX_STR_LEN];
-        int vendor_id;
-        char status[PAPI_MAX_STR_LEN];
-        int num_devices;
-        PAPI_dev_info_u *dev_info_arr;
-    } PAPI_dev_type_info_t;
 
 /**  @ingroup papi_data_structures
   *  @brief Hardware info structure */
@@ -945,9 +828,6 @@ typedef char* PAPI_user_defined_events_file_t;
       /* For future expansion */
       int reserved[8];
 
-      /* Device information */
-      PAPI_dev_type_info_t *dev_type_arr;
-
    } PAPI_hw_info_t;
 
 /** @ingroup papi_data_structures */
@@ -973,8 +853,8 @@ typedef char* PAPI_user_defined_events_file_t;
 	 *  @brief address range specification for range restricted counting if both are zero, range is disabled  */
    typedef struct _papi_addr_range_option { 
       int eventset;           /**< eventset to restrict */
-      caddr_t start;          /**< user requested start address of an address range */
-      caddr_t end;            /**< user requested end address of an address range */
+      vptr_t start;          /**< user requested start address of an address range */
+      vptr_t end;            /**< user requested end address of an address range */
       int start_off;          /**< hardware specified offset from start address */
       int end_off;            /**< hardware specified offset from end address */
    } PAPI_addr_range_option_t;
@@ -997,7 +877,6 @@ typedef char* PAPI_user_defined_events_file_t;
 		PAPI_multiplex_option_t multiplex;
 		PAPI_itimer_option_t itimer;
 		PAPI_hw_info_t *hw_info;
-		PAPI_dev_type_info_t *dev_type_info_arr;
 		PAPI_shlib_info_t *shlib_info;
 		PAPI_exe_info_t *exe_info;
 		PAPI_component_info_t *cmp_info;
@@ -1157,6 +1036,125 @@ enum {
    } PAPI_event_info_t;
 
 
+/** @ingroup papi_data_structures
+ * PAPI_dev_type_id_e - enum device types
+ *
+ * Device types are defined, in most cases, by the device runtime used
+ * to access its attributes. For devices that expose their attributes
+ * through the OS interfaces only the device name is used (e.g., CPU).
+ */
+typedef enum {
+    PAPI_DEV_TYPE_ID__CPU,
+    PAPI_DEV_TYPE_ID__CUDA,
+    PAPI_DEV_TYPE_ID__ROCM,
+    PAPI_DEV_TYPE_ID__MAX_NUM,
+} PAPI_dev_type_id_e;
+
+/** @ingroup papi_data_structures
+ * enum of device types.
+ *
+ * Device type are identified, most of the times, by the runtime used
+ * to access them (e.g., CUDA, ROCM, L0, etc). For devices that expose
+ * their attributes through the operating system interfaces the identification
+ * is the device name (e.g., CPU).
+ */
+enum {
+    PAPI_DEV_TYPE_ENUM__FIRST= (0                          ),
+    PAPI_DEV_TYPE_ENUM__CPU  = (1 << PAPI_DEV_TYPE_ID__CPU ),
+    PAPI_DEV_TYPE_ENUM__CUDA = (1 << PAPI_DEV_TYPE_ID__CUDA),
+    PAPI_DEV_TYPE_ENUM__ROCM = (1 << PAPI_DEV_TYPE_ID__ROCM),
+    PAPI_DEV_TYPE_ENUM__ALL  = (1 << PAPI_DEV_TYPE_ID__MAX_NUM) - 1,
+};
+
+/** @ingroup papi_data_structures
+ * PAPI_dev_type_attr_e - enum device type attributes.
+ *
+ */
+typedef enum {
+    PAPI_DEV_TYPE_ATTR__INT_PAPI_ID,
+    PAPI_DEV_TYPE_ATTR__INT_VENDOR_ID,
+    PAPI_DEV_TYPE_ATTR__CHAR_NAME,
+    PAPI_DEV_TYPE_ATTR__INT_COUNT,
+    PAPI_DEV_TYPE_ATTR__CHAR_STATUS,
+} PAPI_dev_type_attr_e;
+
+/** @ingroup papi_data_structures
+ * PAPI_dev_attr_e - enum device attributes
+ *
+ * As the PAPI_get_dev_attr interface returns a pointer to void as attribute
+ * value, the attribute name has the following format:
+ *
+ *   PAPI_DEV_ATTR__<DEVICE>_<ATTRIBUTE_TYPE>_<ATTRIBUTE_NAME>
+ *
+ * This identifies, in order, the device for which the attribute is being
+ * queried, the type of the attribute returned, and the attribute name.
+ */
+typedef enum {
+    PAPI_DEV_ATTR__CPU_CHAR_NAME,
+    PAPI_DEV_ATTR__CPU_UINT_L1I_CACHE_SIZE,
+    PAPI_DEV_ATTR__CPU_UINT_L1D_CACHE_SIZE,
+    PAPI_DEV_ATTR__CPU_UINT_L2U_CACHE_SIZE,
+    PAPI_DEV_ATTR__CPU_UINT_L3U_CACHE_SIZE,
+    PAPI_DEV_ATTR__CPU_UINT_L1I_CACHE_LINE_SIZE,
+    PAPI_DEV_ATTR__CPU_UINT_L1D_CACHE_LINE_SIZE,
+    PAPI_DEV_ATTR__CPU_UINT_L2U_CACHE_LINE_SIZE,
+    PAPI_DEV_ATTR__CPU_UINT_L3U_CACHE_LINE_SIZE,
+    PAPI_DEV_ATTR__CPU_UINT_L1I_CACHE_LINE_COUNT,
+    PAPI_DEV_ATTR__CPU_UINT_L1D_CACHE_LINE_COUNT,
+    PAPI_DEV_ATTR__CPU_UINT_L2U_CACHE_LINE_COUNT,
+    PAPI_DEV_ATTR__CPU_UINT_L3U_CACHE_LINE_COUNT,
+    PAPI_DEV_ATTR__CPU_UINT_L1I_CACHE_ASSOC,
+    PAPI_DEV_ATTR__CPU_UINT_L1D_CACHE_ASSOC,
+    PAPI_DEV_ATTR__CPU_UINT_L2U_CACHE_ASSOC,
+    PAPI_DEV_ATTR__CPU_UINT_L3U_CACHE_ASSOC,
+    PAPI_DEV_ATTR__CPU_UINT_SOCKET_COUNT,
+    PAPI_DEV_ATTR__CPU_UINT_NUMA_COUNT,
+    PAPI_DEV_ATTR__CPU_UINT_CORE_COUNT,
+    PAPI_DEV_ATTR__CPU_UINT_THREAD_COUNT,
+    PAPI_DEV_ATTR__CPU_UINT_FAMILY,
+    PAPI_DEV_ATTR__CPU_UINT_MODEL,
+    PAPI_DEV_ATTR__CPU_UINT_STEPPING,
+    PAPI_DEV_ATTR__CPU_UINT_NUMA_MEM_SIZE,
+    PAPI_DEV_ATTR__CPU_UINT_THR_NUMA_AFFINITY,
+    PAPI_DEV_ATTR__CPU_UINT_THR_PER_NUMA,
+    PAPI_DEV_ATTR__CUDA_ULONG_UID,
+    PAPI_DEV_ATTR__CUDA_CHAR_DEVICE_NAME,
+    PAPI_DEV_ATTR__CUDA_UINT_WARP_SIZE,
+    PAPI_DEV_ATTR__CUDA_UINT_SHM_PER_BLK,
+    PAPI_DEV_ATTR__CUDA_UINT_SHM_PER_SM,
+    PAPI_DEV_ATTR__CUDA_UINT_BLK_DIM_X,
+    PAPI_DEV_ATTR__CUDA_UINT_BLK_DIM_Y,
+    PAPI_DEV_ATTR__CUDA_UINT_BLK_DIM_Z,
+    PAPI_DEV_ATTR__CUDA_UINT_GRD_DIM_X,
+    PAPI_DEV_ATTR__CUDA_UINT_GRD_DIM_Y,
+    PAPI_DEV_ATTR__CUDA_UINT_GRD_DIM_Z,
+    PAPI_DEV_ATTR__CUDA_UINT_THR_PER_BLK,
+    PAPI_DEV_ATTR__CUDA_UINT_SM_COUNT,
+    PAPI_DEV_ATTR__CUDA_UINT_MULTI_KERNEL,
+    PAPI_DEV_ATTR__CUDA_UINT_MAP_HOST_MEM,
+    PAPI_DEV_ATTR__CUDA_UINT_MEMCPY_OVERLAP,
+    PAPI_DEV_ATTR__CUDA_UINT_UNIFIED_ADDR,
+    PAPI_DEV_ATTR__CUDA_UINT_MANAGED_MEM,
+    PAPI_DEV_ATTR__CUDA_UINT_COMP_CAP_MAJOR,
+    PAPI_DEV_ATTR__CUDA_UINT_COMP_CAP_MINOR,
+    PAPI_DEV_ATTR__CUDA_UINT_BLK_PER_SM,
+    PAPI_DEV_ATTR__ROCM_ULONG_UID,
+    PAPI_DEV_ATTR__ROCM_CHAR_DEVICE_NAME,
+    PAPI_DEV_ATTR__ROCM_UINT_WAVEFRONT_SIZE,
+    PAPI_DEV_ATTR__ROCM_UINT_WORKGROUP_SIZE,
+    PAPI_DEV_ATTR__ROCM_UINT_WAVE_PER_CU,
+    PAPI_DEV_ATTR__ROCM_UINT_SHM_PER_WG,
+    PAPI_DEV_ATTR__ROCM_UINT_WG_DIM_X,
+    PAPI_DEV_ATTR__ROCM_UINT_WG_DIM_Y,
+    PAPI_DEV_ATTR__ROCM_UINT_WG_DIM_Z,
+    PAPI_DEV_ATTR__ROCM_UINT_GRD_DIM_X,
+    PAPI_DEV_ATTR__ROCM_UINT_GRD_DIM_Y,
+    PAPI_DEV_ATTR__ROCM_UINT_GRD_DIM_Z,
+    PAPI_DEV_ATTR__ROCM_UINT_CU_COUNT,
+    PAPI_DEV_ATTR__ROCM_UINT_SIMD_PER_CU,
+    PAPI_DEV_ATTR__ROCM_UINT_COMP_CAP_MAJOR,
+    PAPI_DEV_ATTR__ROCM_UINT_COMP_CAP_MINOR,
+} PAPI_dev_attr_e;
 
 
 /** \internal
@@ -1204,8 +1202,8 @@ enum {
    int   PAPI_overflow(int EventSet, int EventCode, int threshold,
                      int flags, PAPI_overflow_handler_t handler); /**< set up an event set to begin registering overflows */
    void  PAPI_perror(const char *msg ); /**< Print a PAPI error message */
-   int   PAPI_profil(void *buf, unsigned bufsiz, caddr_t offset, 
-					 unsigned scale, int EventSet, int EventCode, 
+   int   PAPI_profil(void *buf, unsigned bufsiz, vptr_t offset,
+					 unsigned scale, int EventSet, int EventCode,
 					 int threshold, int flags); /**< generate PC histogram data where hardware counter overflow occurs */
    int   PAPI_query_event(int EventCode); /**< query if a PAPI event exists */
    int   PAPI_query_named_event(const char *EventName); /**< query if a named PAPI event exists */
@@ -1248,6 +1246,10 @@ enum {
    int PAPI_epc(int event, float *rtime, float *ptime, long long *ref, long long *core, long long *evt, float *epc); /**< gets (named) events per cycle, real and processor time, reference and core cycles */
    int PAPI_rate_stop(); /**< stops a running event set of a rate function */
 
+   int PAPI_enum_dev_type(int enum_modifier, void **handle); /**< return the handler for the next device type available */
+   int PAPI_get_dev_type_attr(void *handle, PAPI_dev_type_attr_e attr, void *value); /**< return the value of the queried attribute for the device type handle */
+   int PAPI_get_dev_attr(void *handle, int id, PAPI_dev_attr_e attr, void *value); /**< return the value of the queried attribute for the device handle */
+
    /** @} */
 
 /** \internal
@@ -1267,21 +1269,6 @@ enum {
 int   PAPI_num_hwctrs(void); /**< return the number of hardware counters for the cpu. for backward compatibility. Don't use! */
 #define PAPI_COMPONENT_INDEX(a) PAPI_get_event_component(a)
 #define PAPI_descr_error(a) PAPI_strerror(a)
-
-#define PAPI_DEV_COUNT(i)                                   \
-    info->dev_type_arr[i].num_devices
-
-#define PAPI_IS_DEV_GPU(vendor, info, i)                    \
-    (info->dev_type_arr[i].id == PAPI_DEV_TYPE_ID__ ## vendor ## _GPU)
-
-#define PAPI_IS_DEV_CPU(info, i)                            \
-    (info->dev_type_arr[i].id == PAPI_DEV_TYPE_ID__CPU)
-
-#define PAPI_GPU_INFO_STRUCT(info, i, j)                    \
-    ((PAPI_gpu_info_u *)(info->dev_type_arr[i].dev_info_arr) + j)
-
-#define PAPI_CPU_INFO_STRUCT(info, i, j)                    \
-    ((PAPI_cpu_info_t *)(info->dev_type_arr[i].dev_info_arr) + j)
 
 #ifdef __cplusplus
 }

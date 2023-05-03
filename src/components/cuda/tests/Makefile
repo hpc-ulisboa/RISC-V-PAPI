@@ -10,7 +10,7 @@ cuda_tests: $(TESTS)
 
 PAPI_CUDA_ROOT ?= $(CUDA_PATH)
 NVCC = $(PAPI_CUDA_ROOT)/bin/nvcc 
-NVCFLAGS = -g -ccbin='$(CC)'
+NVCFLAGS = -g -ccbin='$(CC)' $(NVPPC64LEFLAGS)
 INCLUDE += -I$(PAPI_CUDA_ROOT)/include -I$(PAPI_CUPTI_ROOT)/include 
 CUDALIBS = -L$(CUDRV_DIR)/lib64 -L$(PAPI_CUDA_ROOT)/lib64 -L$(PAPI_CUDA_ROOT)/lib64/stubs -L$(PAPI_CUPTI_ROOT)/lib64 -lcudart -lcupti -lcuda 
 PAPILIB += -L../../../libpfm4/lib -lpfm
@@ -24,6 +24,9 @@ default: $(TESTS)
 
 cupti_multi_kernel_launch_monitoring: cupti_multi_kernel_launch_monitoring.o $(UTILOBJS)
 	$(NVCC) $(NVCFLAGS) -o cupti_multi_kernel_launch_monitoring cupti_multi_kernel_launch_monitoring.o $(UTILOBJS) $(PAPILIB) $(CUDALIBS) $(LDFLAGS)
+
+test_multipass_event_fail: test_multipass_event_fail.c
+	$(NVCC) $(NVCFLAGS) -o test_multipass_event_fail test_multipass_event_fail.c $(INCLUDE) $(UTILOBJS) $(PAPILIB) $(CUDALIBS) $(LDFLAGS)
 
 HelloWorld_CUPTI11: HelloWorld_CUPTI11.o $(UTILOBJS)
 	$(NVCC) $(NVCFLAGS) -o HelloWorld_CUPTI11 HelloWorld_CUPTI11.o $(UTILOBJS) $(PAPILIB) $(CUDALIBS) $(LDFLAGS)

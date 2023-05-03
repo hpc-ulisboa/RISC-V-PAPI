@@ -42,6 +42,7 @@ The library supports many PMUs. The current version can handle:
 		AMD64 Fam17h (Zen1)
 		AMD64 Fam17h (Zen2)
 		AMD64 Fam19h (Zen3) (core and L3)
+		AMD64 Fam19h (Zen4)
 
 	- For Intel X86: 
 		Intel P6 (Pentium II, Pentium Pro, Pentium III, Pentium M)
@@ -75,8 +76,8 @@ The library supports many PMUs. The current version can handle:
 		Applied Micro X-Gene
 		Qualcomm Krait
 		Fujitsu A64FX
-		ARM Neoverse N1
-		ARM Neoverse N2
+		Arm Neoverse V1
+		Arm Neoverse V2
 		Huawei HiSilicon Kunpeng 920
 
 	- For SPARC
@@ -93,6 +94,7 @@ The library supports many PMUs. The current version can handle:
 		Power 8
 		Power 8 Nest
 		Power 9
+		Power 10
 		PPC970
 		Torrent
 		System z (s390x)

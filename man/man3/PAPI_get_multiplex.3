@@ -1,4 +1,4 @@
-.TH "PAPI_get_multiplex" 3 "Thu Feb 27 2020" "Version 6.0.0.0" "PAPI" \" -*- nroff -*-
+.TH "PAPI_get_multiplex" 3 "Fri Mar 10 2023" "Version 7.0.1.0" "PAPI" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -52,29 +52,28 @@ Get the multiplexing status of specified event set\&.
 
 .PP
 .nf
-*   int EventSet = PAPI_NULL;
-*   int ret;
-*    
-*   // Create an empty EventSet
-*   ret = PAPI_create_eventset(&EventSet);
-*   if (ret != PAPI_OK) handle_error(ret);
-*   
-*   // Bind it to the CPU component
-*   ret = PAPI_assign_eventset_component(EventSet, 0);
-*   if (ret != PAPI_OK) handle_error(ret);
-*   
-*   // Check  current multiplex status
-*   ret = PAPI_get_multiplex(EventSet);
-*   if (ret == TRUE) printf("This event set is ready for multiplexing\n\&.")
-*   if (ret == FALSE) printf("This event set is not enabled for multiplexing\n\&.")
-*   if (ret < 0) handle_error(ret);
-*   
-*   // Turn on multiplexing
-*   ret = PAPI_set_multiplex(EventSet);
-*   if ((ret == PAPI_EINVAL) && (PAPI_get_multiplex(EventSet) == TRUE))
-*     printf("This event set already has multiplexing enabled\n");
-*   else if (ret != PAPI_OK) handle_error(ret);
-*   
+int EventSet = PAPI_NULL;
+int ret;
+ 
+// Create an empty EventSet
+ret = PAPI_create_eventset(&EventSet);
+if (ret != PAPI_OK) handle_error(ret);
+
+// Bind it to the CPU component
+ret = PAPI_assign_eventset_component(EventSet, 0);
+if (ret != PAPI_OK) handle_error(ret);
+
+// Check  current multiplex status
+ret = PAPI_get_multiplex(EventSet);
+if (ret == TRUE) printf("This event set is ready for multiplexing\n\&.")
+if (ret == FALSE) printf("This event set is not enabled for multiplexing\n\&.")
+if (ret < 0) handle_error(ret);
+
+// Turn on multiplexing
+ret = PAPI_set_multiplex(EventSet);
+if ((ret == PAPI_EINVAL) && (PAPI_get_multiplex(EventSet) == TRUE))
+  printf("This event set already has multiplexing enabled\n");
+else if (ret != PAPI_OK) handle_error(ret);
 
 .fi
 .PP

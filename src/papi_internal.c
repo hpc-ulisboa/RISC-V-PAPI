@@ -508,6 +508,7 @@ _papi_hwi_init_errors(void) {
 	/* 24 PAPI_ECOMBO */	_papi_hwi_add_error("Bad combination of features");
 	/* 25 PAPI_ECMP_DISABLED */_papi_hwi_add_error("Component containing event is disabled");
     /* 26 PAPI_EDELAY_INIT */ _papi_hwi_add_error("Delayed initialization component");
+    /* 27 PAPI_EMULPASS */ _papi_hwi_add_error("Event exists, but cannot be counted due to multiple passes required by hardware");
 }
 
 int
@@ -1955,7 +1956,6 @@ _papi_hwi_init_global( int PE_OR_PEU )
 	   /* We can be disabled by user before init */
 	   if (!_papi_hwd[i]->cmp_info.disabled && (PE_OR_PEU == is_pe_peu)) {
 	      retval = _papi_hwd[i]->init_component( i );
-	      _papi_hwd[i]->cmp_info.disabled=retval;
 
 	      /* Do some sanity checking */
 	      if (retval==PAPI_OK) {
@@ -2738,4 +2738,60 @@ _papi_hwi_get_context( EventSetInfo_t * ESI, int *is_dirty )
 
 	}
 	return( ctx );
+}
+
+static int
+get_component_index(const char *name)
+{
+    int cidx;
+
+    for (cidx = 0; cidx < papi_num_components; ++cidx) {
+        if (strcmp(_papi_hwd[cidx]->cmp_info.name, name) == 0) {
+            break;
+        }
+    }
+
+    return cidx;
+}
+
+int
+_papi_hwi_enum_dev_type(int enum_modifier, void **handle)
+{
+    _papi_hwi_sysdetect_t args;
+    args.query_type = PAPI_SYSDETECT_QUERY__DEV_TYPE_ENUM;
+    args.query.enumerate.modifier = enum_modifier;
+
+    int cidx = get_component_index("sysdetect");
+    assert(cidx < papi_num_components);
+
+    return _papi_hwd[cidx]->user(0, &args, handle);
+}
+
+int
+_papi_hwi_get_dev_type_attr(void *handle, PAPI_dev_type_attr_e attr, void *value)
+{
+    _papi_hwi_sysdetect_t args;
+    args.query_type = PAPI_SYSDETECT_QUERY__DEV_TYPE_ATTR;
+    args.query.dev_type.handle = handle;
+    args.query.dev_type.attr = attr;
+
+    int cidx = get_component_index("sysdetect");
+    assert(cidx < papi_num_components);
+
+    return _papi_hwd[cidx]->user(0, &args, value);
+}
+
+int
+_papi_hwi_get_dev_attr(void *handle, int id, PAPI_dev_attr_e attr, void *value)
+{
+    _papi_hwi_sysdetect_t args;
+    args.query_type = PAPI_SYSDETECT_QUERY__DEV_ATTR;
+    args.query.dev.handle = handle;
+    args.query.dev.id = id;
+    args.query.dev.attr = attr;
+
+    int cidx = get_component_index("sysdetect");
+    assert(cidx < papi_num_components);
+
+    return _papi_hwd[cidx]->user(0, &args, value);
 }

@@ -424,7 +424,7 @@ get_versioning_info( const char *key, int *val )
     return CPU_SUCCESS;
 }
 
-static PAPI_cache_level_info_t clevel[PAPI_MAX_MEM_HIERARCHY_LEVELS];
+static _sysdetect_cache_level_info_t clevel[PAPI_MAX_MEM_HIERARCHY_LEVELS];
 
 int
 get_cache_info( CPU_attr_e attr, int level, int *val )
@@ -435,7 +435,7 @@ get_cache_info( CPU_attr_e attr, int level, int *val )
     struct dirent *d;
     int max_level = 0;
     int *level_count, level_index;
-    static PAPI_cache_level_info_t *L;
+    static _sysdetect_cache_level_info_t *L;
 
     if (L) {
         return cpu_get_cache_info(attr, level, L, val);
@@ -568,9 +568,9 @@ get_cache_type( const char *dirname, int *value )
         return CPU_ERROR;
     }
 
-    int result = fscanf(fff, "%s", type_string);
+    char *result = fgets(type_string, BUFSIZ, fff);
     fclose(fff);
-    if (result != 1) {
+    if (result == NULL) {
         MEMDBG("Could not read cache type\n");
         return CPU_ERROR;
     }

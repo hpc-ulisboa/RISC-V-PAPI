@@ -42,42 +42,24 @@ template.
 #include "linux-nvml.h"
 
 #include "nvml.h"
-#include "cuda.h"
-#include "cuda_runtime_api.h"
 
 void (*_dl_non_dynamic_init)(void) __attribute__((weak));
 
 /*****  CHANGE PROTOTYPES TO DECLARE CUDA AND NVML LIBRARY SYMBOLS AS WEAK  *****
- *  This is done so that a version of PAPI built with the nvml component can    *
- *  be installed on a system which does not have the cuda libraries installed.  *
+ *  This is done so that a version of PAPI built with the NVML component can    *
+ *  be installed on a system which does not have the NVML libraries installed.  *
  *                                                                              *
  *  If this is done without these prototypes, then all papi services on the     *
- *  system without the cuda libraries installed will fail.  The PAPI libraries  *
- *  contain references to the cuda libraries which are not installed.  The      *
- *  load of PAPI commands fails because the cuda library references can not be  *
+ *  system without the NVML libraries installed will fail.  The PAPI libraries  *
+ *  contain references to the NVML libraries which are not installed.  The      *
+ *  load of PAPI commands fails because the NVML library references can not be  *
  *  resolved.                                                                   *
  *                                                                              *
- *  This also defines pointers to the cuda library functions that we call.      *
+ *  This also defines pointers to the NVML library functions that we call.      *
  *  These function pointers will be resolved with dlopen/dlsym calls at         *
- *  component initialization time.  The component then calls the cuda library   *
+ *  component initialization time.  The component then calls the NVML library   *
  *  functions through these function pointers.                                  *
  ********************************************************************************/
-#undef CUDAAPI
-#define CUDAAPI __attribute__((weak))
-CUresult CUDAAPI cuInit(unsigned int);
-
-CUresult(*cuInitPtr)(unsigned int);
-
-#undef CUDARTAPI
-#define CUDARTAPI __attribute__((weak))
-cudaError_t CUDARTAPI cudaGetDevice(int *);
-cudaError_t CUDARTAPI cudaGetDeviceCount(int *);
-cudaError_t CUDARTAPI cudaDeviceGetPCIBusId(char *, int, int);
-
-cudaError_t (*cudaGetDevicePtr)(int *);
-cudaError_t (*cudaGetDeviceCountPtr)(int *);
-cudaError_t (*cudaDeviceGetPCIBusIdPtr)(char *, int, int);
-
 #undef DECLDIR
 #define DECLDIR __attribute__((weak))
 nvmlReturn_t DECLDIR nvmlDeviceGetClockInfo(nvmlDevice_t, nvmlClockType_t, unsigned int *);
@@ -102,35 +84,31 @@ nvmlReturn_t DECLDIR nvmlDeviceGetPowerManagementLimit(nvmlDevice_t device, unsi
 nvmlReturn_t DECLDIR nvmlDeviceSetPowerManagementLimit(nvmlDevice_t device, unsigned int  limit);
 nvmlReturn_t DECLDIR nvmlDeviceGetPowerManagementLimitConstraints(nvmlDevice_t device, unsigned int* minLimit, unsigned int* maxLimit);
 
-nvmlReturn_t (*nvmlDeviceGetClockInfoPtr)(nvmlDevice_t, nvmlClockType_t, unsigned int *);
-char* (*nvmlErrorStringPtr)(nvmlReturn_t);
-nvmlReturn_t (*nvmlDeviceGetDetailedEccErrorsPtr)(nvmlDevice_t, nvmlEccBitType_t, nvmlEccCounterType_t, nvmlEccErrorCounts_t *);
-nvmlReturn_t (*nvmlDeviceGetFanSpeedPtr)(nvmlDevice_t, unsigned int *);
-nvmlReturn_t (*nvmlDeviceGetMemoryInfoPtr)(nvmlDevice_t, nvmlMemory_t *);
-nvmlReturn_t (*nvmlDeviceGetPerformanceStatePtr)(nvmlDevice_t, nvmlPstates_t *);
-nvmlReturn_t (*nvmlDeviceGetPowerUsagePtr)(nvmlDevice_t, unsigned int *);
-nvmlReturn_t (*nvmlDeviceGetTemperaturePtr)(nvmlDevice_t, nvmlTemperatureSensors_t, unsigned int *);
-nvmlReturn_t (*nvmlDeviceGetTotalEccErrorsPtr)(nvmlDevice_t, nvmlEccBitType_t, nvmlEccCounterType_t, unsigned long long *);
-nvmlReturn_t (*nvmlDeviceGetUtilizationRatesPtr)(nvmlDevice_t, nvmlUtilization_t *);
-nvmlReturn_t (*nvmlDeviceGetHandleByIndexPtr)(unsigned int, nvmlDevice_t *);
-nvmlReturn_t (*nvmlDeviceGetPciInfoPtr)(nvmlDevice_t, nvmlPciInfo_t *);
-nvmlReturn_t (*nvmlDeviceGetNamePtr)(nvmlDevice_t, char *, unsigned int);
-nvmlReturn_t (*nvmlDeviceGetInforomVersionPtr)(nvmlDevice_t, nvmlInforomObject_t, char *, unsigned int);
-nvmlReturn_t (*nvmlDeviceGetEccModePtr)(nvmlDevice_t, nvmlEnableState_t *, nvmlEnableState_t *);
-nvmlReturn_t (*nvmlInitPtr)(void);
-nvmlReturn_t (*nvmlDeviceGetCountPtr)(unsigned int *);
-nvmlReturn_t (*nvmlShutdownPtr)(void);
-nvmlReturn_t (*nvmlDeviceGetPowerManagementLimitPtr)(nvmlDevice_t device, unsigned int* limit);
-nvmlReturn_t (*nvmlDeviceSetPowerManagementLimitPtr)(nvmlDevice_t device, unsigned int  limit);
-nvmlReturn_t (*nvmlDeviceGetPowerManagementLimitConstraintsPtr)(nvmlDevice_t device, unsigned int* minLimit, unsigned int* maxLimit);
+static nvmlReturn_t (*nvmlDeviceGetClockInfoPtr)(nvmlDevice_t, nvmlClockType_t, unsigned int *);
+static char* (*nvmlErrorStringPtr)(nvmlReturn_t);
+static nvmlReturn_t (*nvmlDeviceGetDetailedEccErrorsPtr)(nvmlDevice_t, nvmlEccBitType_t, nvmlEccCounterType_t, nvmlEccErrorCounts_t *);
+static nvmlReturn_t (*nvmlDeviceGetFanSpeedPtr)(nvmlDevice_t, unsigned int *);
+static nvmlReturn_t (*nvmlDeviceGetMemoryInfoPtr)(nvmlDevice_t, nvmlMemory_t *);
+static nvmlReturn_t (*nvmlDeviceGetPerformanceStatePtr)(nvmlDevice_t, nvmlPstates_t *);
+static nvmlReturn_t (*nvmlDeviceGetPowerUsagePtr)(nvmlDevice_t, unsigned int *);
+static nvmlReturn_t (*nvmlDeviceGetTemperaturePtr)(nvmlDevice_t, nvmlTemperatureSensors_t, unsigned int *);
+static nvmlReturn_t (*nvmlDeviceGetTotalEccErrorsPtr)(nvmlDevice_t, nvmlEccBitType_t, nvmlEccCounterType_t, unsigned long long *);
+static nvmlReturn_t (*nvmlDeviceGetUtilizationRatesPtr)(nvmlDevice_t, nvmlUtilization_t *);
+static nvmlReturn_t (*nvmlDeviceGetHandleByIndexPtr)(unsigned int, nvmlDevice_t *);
+static nvmlReturn_t (*nvmlDeviceGetPciInfoPtr)(nvmlDevice_t, nvmlPciInfo_t *);
+static nvmlReturn_t (*nvmlDeviceGetNamePtr)(nvmlDevice_t, char *, unsigned int);
+static nvmlReturn_t (*nvmlDeviceGetInforomVersionPtr)(nvmlDevice_t, nvmlInforomObject_t, char *, unsigned int);
+static nvmlReturn_t (*nvmlDeviceGetEccModePtr)(nvmlDevice_t, nvmlEnableState_t *, nvmlEnableState_t *);
+static nvmlReturn_t (*nvmlInitPtr)(void);
+static nvmlReturn_t (*nvmlDeviceGetCountPtr)(unsigned int *);
+static nvmlReturn_t (*nvmlShutdownPtr)(void);
+static nvmlReturn_t (*nvmlDeviceGetPowerManagementLimitPtr)(nvmlDevice_t device, unsigned int* limit);
+static nvmlReturn_t (*nvmlDeviceSetPowerManagementLimitPtr)(nvmlDevice_t device, unsigned int  limit);
+static nvmlReturn_t (*nvmlDeviceGetPowerManagementLimitConstraintsPtr)(nvmlDevice_t device, unsigned int* minLimit, unsigned int* maxLimit);
 
-// file handles used to access cuda libraries with dlopen
-static void* dl1 = NULL;
-static void* dl2 = NULL;
+// file handles used to access NVML libraries with dlopen
 static void* dl3 = NULL;
 
-static char cuda_main[]=PAPI_CUDA_MAIN;
-static char cuda_runtime[]=PAPI_CUDA_RUNTIME;
 static char nvml_main[]=PAPI_NVML_MAIN;
 
 static int linkCudaLibraries();
@@ -157,6 +135,7 @@ typedef struct nvml_context {
 
 /** This table contains the native events */
 static nvml_native_event_entry_t *nvml_native_table = NULL;
+static                       int *nvml_dev_id_table = NULL;
 
 /** Number of devices detected at component_init time */
 static int device_count = 0;
@@ -478,7 +457,7 @@ nvml_hardware_read(long long *value, int which_one)
     entry = &nvml_native_table[which_one];
     *value = (long long) - 1;
     /* replace entry->resources with the current cuda_device->nvml device */
-    (*cudaGetDevicePtr)(&cudaIdx);
+    cudaIdx = nvml_dev_id_table[which_one];
 
     if (cudaIdx < 0 || cudaIdx > device_count)
         return PAPI_EINVAL;
@@ -559,7 +538,7 @@ static int nvml_hardware_write(long long *value, int which_one)
 
     entry = &nvml_native_table[which_one];
     /* replace entry->resources with the current cuda_device->nvml device */
-    (*cudaGetDevicePtr)(&cudaIdx);
+    cudaIdx = nvml_dev_id_table[which_one];
 
     if (cudaIdx < 0 || cudaIdx > device_count)
         return PAPI_EINVAL;
@@ -642,10 +621,9 @@ detectDevices()
         ret = (*nvmlDeviceGetNamePtr)(devices[i], name, sizeof(name) - 1);
         if (NVML_SUCCESS != ret) {
             SUBDBG("nvmlDeviceGetName failed \n");
-            strncpy(name, "deviceNameUnknown", 17);
+            const char *name_unknown = "deviceNameUnknown";
+            strncpy(name, name_unknown, strlen(name_unknown) + 1);
         }
-
-        name[sizeof(name) - 1] = '\0';   // to safely use strstr operation below, the variable 'name' must be null terminated
 
         ret = (*nvmlDeviceGetInforomVersionPtr)(devices[i], NVML_INFOROM_ECC, inforomECC, 16);
         if (NVML_SUCCESS != ret) {
@@ -772,11 +750,11 @@ detectDevices()
 static void
 createNativeEvents()
 {
-    char name[64];
-    char sanitized_name[PAPI_MAX_STR_LEN];
-    char names[device_count][64];
+    char name[PAPI_MIN_STR_LEN];
+    char sanitized_name[PAPI_MIN_STR_LEN];
+    char names[device_count][PAPI_MAX_STR_LEN];
 
-    int i, nameLen = 0, j;
+    int i, nameLen = 0, j, devTableIdx = 0;
 
     nvml_native_event_entry_t* entry;
     nvmlReturn_t ret;
@@ -785,18 +763,19 @@ createNativeEvents()
                             sizeof(nvml_native_event_entry_t) * num_events);
     memset(nvml_native_table, 0x0, sizeof(nvml_native_event_entry_t) * num_events);
     entry = &nvml_native_table[0];
+    nvml_dev_id_table = (int*) papi_malloc(num_events*sizeof(int));
 
     for (i = 0; i < device_count; i++) {
-        memset(names[i], 0x0, 64);
+        memset(names[i], 0x0, PAPI_MAX_STR_LEN);
         ret = (*nvmlDeviceGetNamePtr)(devices[i], name, sizeof(name) - 1);
         if (NVML_SUCCESS != ret) {
             SUBDBG("nvmlDeviceGetName failed \n");
-            strncpy(name, "deviceNameUnknown", 17);
+            const char *name_unknown = "deviceNameUnknown";
+            strncpy(name, name_unknown, strlen(name_unknown) + 1);
         }
-        name[sizeof(name) - 1] = '\0';   // to safely use strlen operation below, the variable 'name' must be null terminated
 
         nameLen = strlen(name);
-        strncpy(sanitized_name, name, PAPI_MAX_STR_LEN);
+        strncpy(sanitized_name, name, PAPI_MIN_STR_LEN);
 
         int retval = snprintf(sanitized_name, sizeof(name), "%s:device_%d", name, i);
         if (retval > (int)sizeof(name)) {
@@ -815,18 +794,24 @@ createNativeEvents()
             entry->options.clock = NVML_CLOCK_GRAPHICS;
             entry->type = FEATURE_CLOCK_INFO;
             entry++;
+            nvml_dev_id_table[devTableIdx] = i;
+            devTableIdx++;
 
             sprintf(entry->name, "%s:sm_clock", sanitized_name);
             strncpy(entry->description, "SM clock domain (MHz).", PAPI_MAX_STR_LEN);
             entry->options.clock = NVML_CLOCK_SM;
             entry->type = FEATURE_CLOCK_INFO;
             entry++;
+            nvml_dev_id_table[devTableIdx] = i;
+            devTableIdx++;
 
             sprintf(entry->name, "%s:memory_clock", sanitized_name);
             strncpy(entry->description, "Memory clock domain (MHz).", PAPI_MAX_STR_LEN);
             entry->options.clock = NVML_CLOCK_MEM;
             entry->type = FEATURE_CLOCK_INFO;
             entry++;
+            nvml_dev_id_table[devTableIdx] = i;
+            devTableIdx++;
         }
 
         if (HAS_FEATURE(features[i], FEATURE_ECC_LOCAL_ERRORS)) {
@@ -838,6 +823,8 @@ createNativeEvents()
             };
             entry->type = FEATURE_ECC_LOCAL_ERRORS;
             entry++;
+            nvml_dev_id_table[devTableIdx] = i;
+            devTableIdx++;
 
             sprintf(entry->name, "%s:l2_single_ecc_errors", sanitized_name);
             strncpy(entry->description, "L2 cache single bit ECC", PAPI_MAX_STR_LEN);
@@ -847,6 +834,8 @@ createNativeEvents()
             };
             entry->type = FEATURE_ECC_LOCAL_ERRORS;
             entry++;
+            nvml_dev_id_table[devTableIdx] = i;
+            devTableIdx++;
 
             sprintf(entry->name, "%s:memory_single_ecc_errors", sanitized_name);
             strncpy(entry->description, "Device memory single bit ECC", PAPI_MAX_STR_LEN);
@@ -856,6 +845,8 @@ createNativeEvents()
             };
             entry->type = FEATURE_ECC_LOCAL_ERRORS;
             entry++;
+            nvml_dev_id_table[devTableIdx] = i;
+            devTableIdx++;
 
             sprintf(entry->name, "%s:regfile_single_ecc_errors", sanitized_name);
             strncpy(entry->description, "Register file single bit ECC", PAPI_MAX_STR_LEN);
@@ -865,6 +856,8 @@ createNativeEvents()
             };
             entry->type = FEATURE_ECC_LOCAL_ERRORS;
             entry++;
+            nvml_dev_id_table[devTableIdx] = i;
+            devTableIdx++;
 
             sprintf(entry->name, "%s:1l_double_ecc_errors", sanitized_name);
             strncpy(entry->description, "L1 cache double bit ECC", PAPI_MAX_STR_LEN);
@@ -874,6 +867,8 @@ createNativeEvents()
             };
             entry->type = FEATURE_ECC_LOCAL_ERRORS;
             entry++;
+            nvml_dev_id_table[devTableIdx] = i;
+            devTableIdx++;
 
             sprintf(entry->name, "%s:l2_double_ecc_errors", sanitized_name);
             strncpy(entry->description, "L2 cache double bit ECC", PAPI_MAX_STR_LEN);
@@ -883,6 +878,8 @@ createNativeEvents()
             };
             entry->type = FEATURE_ECC_LOCAL_ERRORS;
             entry++;
+            nvml_dev_id_table[devTableIdx] = i;
+            devTableIdx++;
 
             sprintf(entry->name, "%s:memory_double_ecc_errors", sanitized_name);
             strncpy(entry->description, "Device memory double bit ECC", PAPI_MAX_STR_LEN);
@@ -892,6 +889,8 @@ createNativeEvents()
             };
             entry->type = FEATURE_ECC_LOCAL_ERRORS;
             entry++;
+            nvml_dev_id_table[devTableIdx] = i;
+            devTableIdx++;
 
             sprintf(entry->name, "%s:regfile_double_ecc_errors", sanitized_name);
             strncpy(entry->description, "Register file double bit ECC", PAPI_MAX_STR_LEN);
@@ -901,6 +900,8 @@ createNativeEvents()
             };
             entry->type = FEATURE_ECC_LOCAL_ERRORS;
             entry++;
+            nvml_dev_id_table[devTableIdx] = i;
+            devTableIdx++;
         }
 
         if (HAS_FEATURE(features[i], FEATURE_FAN_SPEED)) {
@@ -908,6 +909,8 @@ createNativeEvents()
             strncpy(entry->description, "The fan speed expressed as a percent of the maximum, i.e. full speed is 100%", PAPI_MAX_STR_LEN);
             entry->type = FEATURE_FAN_SPEED;
             entry++;
+            nvml_dev_id_table[devTableIdx] = i;
+            devTableIdx++;
         }
 
         if (HAS_FEATURE(features[i], FEATURE_MAX_CLOCK)) {
@@ -916,18 +919,24 @@ createNativeEvents()
             entry->options.clock = NVML_CLOCK_GRAPHICS;
             entry->type = FEATURE_MAX_CLOCK;
             entry++;
+            nvml_dev_id_table[devTableIdx] = i;
+            devTableIdx++;
 
             sprintf(entry->name, "%s:sm_max_clock", sanitized_name);
             strncpy(entry->description, "Maximal SM clock domain (MHz).", PAPI_MAX_STR_LEN);
             entry->options.clock = NVML_CLOCK_SM;
             entry->type = FEATURE_MAX_CLOCK;
             entry++;
+            nvml_dev_id_table[devTableIdx] = i;
+            devTableIdx++;
 
             sprintf(entry->name, "%s:memory_max_clock", sanitized_name);
             strncpy(entry->description, "Maximal Memory clock domain (MHz).", PAPI_MAX_STR_LEN);
             entry->options.clock = NVML_CLOCK_MEM;
             entry->type = FEATURE_MAX_CLOCK;
             entry++;
+            nvml_dev_id_table[devTableIdx] = i;
+            devTableIdx++;
         }
 
         if (HAS_FEATURE(features[i], FEATURE_MEMORY_INFO)) {
@@ -936,18 +945,24 @@ createNativeEvents()
             entry->options.which_one = MEMINFO_TOTAL_MEMORY;
             entry->type = FEATURE_MEMORY_INFO;
             entry++;
+            nvml_dev_id_table[devTableIdx] = i;
+            devTableIdx++;
 
             sprintf(entry->name, "%s:unallocated_memory", sanitized_name);
             strncpy(entry->description, "Uncallocated FB memory (in bytes).", PAPI_MAX_STR_LEN);
             entry->options.which_one = MEMINFO_UNALLOCED;
             entry->type = FEATURE_MEMORY_INFO;
             entry++;
+            nvml_dev_id_table[devTableIdx] = i;
+            devTableIdx++;
 
             sprintf(entry->name, "%s:allocated_memory", sanitized_name);
             strncpy(entry->description, "Allocated FB memory (in bytes). Note that the driver/GPU always sets aside a small amount of memory for bookkeeping.", PAPI_MAX_STR_LEN);
             entry->options.which_one = MEMINFO_ALLOCED;
             entry->type = FEATURE_MEMORY_INFO;
             entry++;
+            nvml_dev_id_table[devTableIdx] = i;
+            devTableIdx++;
         }
 
         if (HAS_FEATURE(features[i], FEATURE_PERF_STATES)) {
@@ -955,6 +970,8 @@ createNativeEvents()
             strncpy(entry->description, "The performance state of the device.", PAPI_MAX_STR_LEN);
             entry->type = FEATURE_PERF_STATES;
             entry++;
+            nvml_dev_id_table[devTableIdx] = i;
+            devTableIdx++;
         }
 
         if (HAS_FEATURE(features[i], FEATURE_POWER)) {
@@ -964,6 +981,8 @@ createNativeEvents()
             strncpy(entry->description, "Power usage reading for the device, in miliwatts. This is the power draw (+/-5 watts) for the entire board: GPU, memory, etc.", PAPI_MAX_STR_LEN);
             entry->type = FEATURE_POWER;
             entry++;
+            nvml_dev_id_table[devTableIdx] = i;
+            devTableIdx++;
         }
 
         if (HAS_FEATURE(features[i], FEATURE_TEMP)) {
@@ -971,6 +990,8 @@ createNativeEvents()
             strncpy(entry->description, "Current temperature readings for the device, in degrees C.", PAPI_MAX_STR_LEN);
             entry->type = FEATURE_TEMP;
             entry++;
+            nvml_dev_id_table[devTableIdx] = i;
+            devTableIdx++;
         }
 
         if (HAS_FEATURE(features[i], FEATURE_ECC_TOTAL_ERRORS)) {
@@ -989,6 +1010,8 @@ createNativeEvents()
             };
             entry->type = FEATURE_ECC_TOTAL_ERRORS;
             entry++;
+            nvml_dev_id_table[devTableIdx] = i;
+            devTableIdx++;
         }
 
         if (HAS_FEATURE(features[i], FEATURE_UTILIZATION)) {
@@ -997,21 +1020,28 @@ createNativeEvents()
             entry->options.which_one = GPU_UTILIZATION;
             entry->type = FEATURE_UTILIZATION;
             entry++;
+            nvml_dev_id_table[devTableIdx] = i;
+            devTableIdx++;
 
             sprintf(entry->name, "%s:memory_utilization", sanitized_name);
             strncpy(entry->description, "Percent of time over the past second during which global (device) memory was being read or written.", PAPI_MAX_STR_LEN);
             entry->options.which_one = MEMORY_UTILIZATION;
             entry->type = FEATURE_UTILIZATION;
             entry++;
+            nvml_dev_id_table[devTableIdx] = i;
+            devTableIdx++;
         }
 
         if (HAS_FEATURE(features[i], FEATURE_POWER_MANAGEMENT)) {
             sprintf(entry->name, "%s:power_management_limit", sanitized_name);
             // set the power event units value to "mW" for milliwatts
             strncpy(entry->units, "mW", PAPI_MIN_STR_LEN);
-            strncpy(entry->description, "Power management limit in milliwatts associated with the device.  The power limit defines the upper boundary for the cards power draw. If the cards total power draw reaches this limit the power management algorithm kicks in. This should be writable (with appropriate privileges) on supported Kepler or later (unit milliWatts). ", PAPI_MAX_STR_LEN);
+            strncpy(entry->description, "Power draw upper bound limit (in mW) for the device. Writable (with appropriate privileges) on supported Kepler or later.", PAPI_MAX_STR_LEN - 1);
+            entry->description[PAPI_MAX_STR_LEN - 1] = '\0';
             entry->type = FEATURE_POWER_MANAGEMENT;
             entry++;
+            nvml_dev_id_table[devTableIdx] = i;
+            devTableIdx++;
         }
         if (HAS_FEATURE(features[i], FEATURE_NVML_POWER_MANAGEMENT_LIMIT_CONSTRAINT_MIN)) {
             sprintf(entry->name, "%s:power_management_limit_constraint_min", sanitized_name);
@@ -1019,6 +1049,8 @@ createNativeEvents()
             strncpy(entry->description, "The minimum power management limit in milliwatts.", PAPI_MAX_STR_LEN);
             entry->type = FEATURE_NVML_POWER_MANAGEMENT_LIMIT_CONSTRAINT_MIN;
             entry++;
+            nvml_dev_id_table[devTableIdx] = i;
+            devTableIdx++;
         }
 
         if (HAS_FEATURE(features[i], FEATURE_NVML_POWER_MANAGEMENT_LIMIT_CONSTRAINT_MAX)) {
@@ -1027,6 +1059,8 @@ createNativeEvents()
             strncpy(entry->description, "The maximum power management limit in milliwatts.", PAPI_MAX_STR_LEN);
             entry->type = FEATURE_NVML_POWER_MANAGEMENT_LIMIT_CONSTRAINT_MAX;
             entry++;
+            nvml_dev_id_table[devTableIdx] = i;
+            devTableIdx++;
         }
 
         strncpy(names[i], name, sizeof(names[0]) - 1);
@@ -1044,6 +1078,7 @@ int _papi_nvml_shutdown_component()
     SUBDBG("Enter:\n");
     nvml_hardware_reset();
     if (nvml_native_table != NULL) papi_free(nvml_native_table);
+    if (nvml_dev_id_table != NULL) papi_free(nvml_dev_id_table);
     if (devices != NULL) papi_free(devices);
     if (features != NULL) papi_free(features);
     if (power_management_initial_limit) papi_free(power_management_initial_limit);
@@ -1056,8 +1091,6 @@ int _papi_nvml_shutdown_component()
 
     // close the dynamic libraries needed by this component (opened in the init component call)
     if (dl3) {dlclose(dl3); dl3=NULL;}
-    if (dl2) {dlclose(dl2); dl2=NULL;}
-    if (dl1) {dlclose(dl1); dl1=NULL;}
 
     return PAPI_OK;
 }
@@ -1084,6 +1117,7 @@ static int _papi_nvml_init_component(int cidx)
 
      sprintf(_nvml_vector.cmp_info.disabled_reason,
              "Not initialized. Access component events to initialize it.");
+    _nvml_vector.cmp_info.disabled = PAPI_EDELAY_INIT;
 
     return PAPI_EDELAY_INIT;
 }
@@ -1091,17 +1125,14 @@ static int _papi_nvml_init_component(int cidx)
 int _papi_nvml_init_private(void)
 {
     nvmlReturn_t ret;
-    cudaError_t cuerr;
     int err = PAPI_OK;
-
-    int cuda_count = 0;
     unsigned int nvml_count = 0;
 
     PAPI_lock(COMPONENT_LOCK);
     if (_nvml_vector.cmp_info.initialized) goto nvml_init_private_exit;
 
     SUBDBG("Private init with component idx: %d\n", _nvml_vector.cmp_info.CmpIdx);
-    /* link in the cuda and nvml libraries and resolve the symbols we need to use */
+    /* link in the NVML libraries and resolve the symbols we need to use */
     if (linkCudaLibraries() != PAPI_OK) {
         SUBDBG("Dynamic link of CUDA libraries failed, component will be disabled.\n");
         SUBDBG("See disable reason in papi_component_avail output for more details.\n");
@@ -1118,14 +1149,6 @@ int _papi_nvml_init_private(void)
         goto nvml_init_private_exit;
     }
 
-    cuerr = (*cuInitPtr)(0);
-    if (cudaSuccess != cuerr) {
-        strcpy(_nvml_vector.cmp_info.disabled_reason, "The CUDA library failed to initialize.");
-        _papi_nvml_shutdown_component();                          // clean up any open dynLibs, mallocs, etc.
-        err = PAPI_ENOSUPP;
-        goto nvml_init_private_exit;
-    }
-
     /* Figure out the number of CUDA devices in the system */
     ret = (*nvmlDeviceGetCountPtr)(&nvml_count);
     if (NVML_SUCCESS != ret) {
@@ -1135,23 +1158,7 @@ int _papi_nvml_init_private(void)
         goto nvml_init_private_exit;
     }
 
-    cuerr = (*cudaGetDeviceCountPtr)(&cuda_count);
-    if (cudaSuccess != cuerr) {
-        strcpy(_nvml_vector.cmp_info.disabled_reason, "Unable to get a device count from CUDA.");
-        _papi_nvml_shutdown_component();                          // clean up any open dynLibs, mallocs, etc.
-        err = PAPI_ENOSUPP;
-        goto nvml_init_private_exit;
-    }
-
-    /* We can probably recover from this, when we're clever */
-    if ((cuda_count > 0) && (nvml_count != (unsigned int)cuda_count)) {
-        strcpy(_nvml_vector.cmp_info.disabled_reason, "CUDA and the NVIDIA management library have different device counts.");
-        _papi_nvml_shutdown_component();                          // clean up any open dynLibs, mallocs, etc.
-        err = PAPI_ENOSUPP;
-        goto nvml_init_private_exit;
-    }
-
-    device_count = cuda_count;
+    device_count = nvml_count;
     SUBDBG("Need to setup NVML with %d devices\n", device_count);
 
     /* A per device representation of what events are present */
@@ -1234,9 +1241,9 @@ nvml_init_private_exit:
 }
 
 /*
- * Link the necessary CUDA libraries to use the cuda component.  If any of them can not be found, then
- * the CUDA component will just be disabled.  This is done at runtime so that a version of PAPI built
- * with the CUDA component can be installed and used on systems which have the CUDA libraries installed
+ * Link the necessary CUDA libraries to use the NVML component.  If any of them can not be found, then
+ * the NVML component will just be disabled.  This is done at runtime so that a version of PAPI built
+ * with the NVML component can be installed and used on systems which have the CUDA libraries installed
  * and on systems where these libraries are not installed.
  */
 static int
@@ -1249,91 +1256,9 @@ linkCudaLibraries()
         return PAPI_ENOSUPP;
     }
 
-    // Need to link in the cuda libraries, if any not found disable the component.
+    // Need to link in the NVML libraries, if any not found disable the component.
     // getenv returns NULL if environment variable is not found.
     char *cuda_root = getenv("PAPI_CUDA_ROOT");
-    dl1 = NULL;                                                 // Ensure reset to NULL.
-
-    // Step 1: Process override if given.   
-    if (strlen(cuda_main) > 0) {                                // If override given, it has to work.
-        dl1 = dlopen(cuda_main, RTLD_NOW | RTLD_GLOBAL);        // Try to open that path.
-        if (dl1 == NULL) {
-            snprintf(_nvml_vector.cmp_info.disabled_reason, PAPI_MAX_STR_LEN, "PAPI_CUDA_MAIN override '%s' given in Rules.nvml not found.", cuda_main);
-            return(PAPI_ENOSUPP);   // Override given but not found.
-        }
-    }
-
-    // Step 2: Try system paths, will work with Spack, LD_LIBRARY_PATH, default paths.
-    if (dl1 == NULL) {                                          // No override,
-        dl1 = dlopen("libcuda.so", RTLD_NOW | RTLD_GLOBAL);     // Try system paths.
-    }
-
-    // Step 3: Try the explicit install default. 
-    if (dl1 == NULL && cuda_root != NULL) {                          // if root given, try it.
-        snprintf(path_lib, 1024, "%s/lib64/libcuda.so", cuda_root);  // PAPI Root check.
-        dl1 = dlopen(path_lib, RTLD_NOW | RTLD_GLOBAL);              // Try to open that path.
-    }
-
-    // Check for failure.
-    if (dl1 == NULL) {
-        snprintf(_nvml_vector.cmp_info.disabled_reason, PAPI_MAX_STR_LEN, "libcuda.so not found.");
-        return(PAPI_ENOSUPP);
-    }
-
-    // We have a dl1. (libcuda.so).
-
-    cuInitPtr = dlsym(dl1, "cuInit");
-    if (dlerror() != NULL) {
-        strncpy(_nvml_vector.cmp_info.disabled_reason, "CUDA function cuInit not found.", PAPI_MAX_STR_LEN);
-        return (PAPI_ENOSUPP);
-    }
-
-    /* Need to link in the cuda runtime library, if not found disable the component */
-    dl2 = NULL;                                 // Ensure reset to NULL.
-
-    // Step 1: Process override if given.   
-    if (strlen(cuda_runtime) > 0) {                                // If override given, it has to work.
-        dl2 = dlopen(cuda_runtime, RTLD_NOW | RTLD_GLOBAL);        // Try to open that path.
-        if (dl2 == NULL) {
-            snprintf(_nvml_vector.cmp_info.disabled_reason, PAPI_MAX_STR_LEN, "PAPI_CUDA_RUNTIME override '%s' given in Rules.nvml not found.", cuda_runtime);
-            return(PAPI_ENOSUPP);   // Override given but not found.
-        }
-    }
-
-    // Step 2: Try system paths, will work with Spack, LD_LIBRARY_PATH, default paths.
-    if (dl2 == NULL) {                                          // No override,
-        dl2 = dlopen("libcudart.so", RTLD_NOW | RTLD_GLOBAL);   // Try system paths.
-    }
-
-    // Step 3: Try the explicit install default. 
-    if (dl2 == NULL && cuda_root != NULL) {                             // if root given, try it.
-        snprintf(path_lib, 1024, "%s/lib64/libcudart.so", cuda_root);   // PAPI Root check.
-        dl2 = dlopen(path_lib, RTLD_NOW | RTLD_GLOBAL);                 // Try to open that path.
-    }
-
-    // Check for failure.
-    if (dl2 == NULL) {
-        snprintf(_nvml_vector.cmp_info.disabled_reason, PAPI_MAX_STR_LEN, "libcudart.so not found.");
-        return(PAPI_ENOSUPP);
-    }
-
-    // We have a dl2. (libcudart.so).
-    
-   cudaGetDevicePtr = dlsym(dl2, "cudaGetDevice");
-    if (dlerror() != NULL) {
-        strncpy(_nvml_vector.cmp_info.disabled_reason, "CUDART function cudaGetDevice not found.", PAPI_MAX_STR_LEN);
-        return (PAPI_ENOSUPP);
-    }
-    cudaGetDeviceCountPtr = dlsym(dl2, "cudaGetDeviceCount");
-    if (dlerror() != NULL) {
-        strncpy(_nvml_vector.cmp_info.disabled_reason, "CUDART function cudaGetDeviceCount not found.", PAPI_MAX_STR_LEN);
-        return (PAPI_ENOSUPP);
-    }
-    cudaDeviceGetPCIBusIdPtr = dlsym(dl2, "cudaDeviceGetPCIBusId");
-    if (dlerror() != NULL) {
-        strncpy(_nvml_vector.cmp_info.disabled_reason, "CUDART function cudaDeviceGetPCIBusId not found.", PAPI_MAX_STR_LEN);
-        return (PAPI_ENOSUPP);
-    }
 
     // We need the NVML main library, normally libnvidia-ml.so. 
     dl3 = NULL;                                                 // Ensure reset to NULL.

@@ -43,6 +43,8 @@ VmLib:      1360 kB
 VmPTE:        20 kB
 */
 
+int
+generic_get_memory_info( PAPI_hw_info_t *hw_info );
 
 int
 _linux_get_dmem_info( PAPI_dmem_info_t * d )
@@ -581,7 +583,141 @@ PAPI_mh_info_t sys_mem_info[] = {
 		   }
 		  ,
 		  }
-		 }						 // POWER8 end
+		 },						 // POWER8 end
+		{3,
+		 {
+		  [0] = { // level 1 begins
+			.tlb = {
+			/// POWER9 has an ERAT (Effective to Real Address
+			/// Translation) instead of a TLB.  For the purposes of this
+			/// data, we will treat it like a TLB.
+			[0] = { .type = PAPI_MH_TYPE_INST,
+					.num_entries = 64, .page_size = 0,
+					.associativity = SHRT_MAX }
+			,
+			[1] = { .type = PAPI_MH_TYPE_DATA,
+					.num_entries = 64, .page_size = 0,
+					.associativity = SHRT_MAX }
+			}
+			,
+			.cache = { // level 1 caches begin
+			[0] = { .type = PAPI_MH_TYPE_INST | PAPI_MH_TYPE_PSEUDO_LRU,
+					.size = 32768, .line_size = 128, .num_lines = 256,
+					.associativity = 8 }
+			,
+			[1] = { .type = PAPI_MH_TYPE_DATA | PAPI_MH_TYPE_WT | PAPI_MH_TYPE_LRU,
+					.size = 32768, .line_size = 128, .num_lines = 256,
+					.associativity = 8 }
+			}
+		   }
+		  ,
+		  [1] = { // level 2 begins
+			.tlb = {
+			[0] = { .type = PAPI_MH_TYPE_UNIFIED, .num_entries = 1024,
+				.page_size = 0, .associativity = 4 }
+			,
+			[1] = { .type = PAPI_MH_TYPE_EMPTY, .num_entries = -1,
+				.page_size = -1, .associativity = -1 }
+			}
+			,
+			.cache = {
+			[0] = { .type = PAPI_MH_TYPE_UNIFIED | PAPI_MH_TYPE_PSEUDO_LRU,
+					.size = 524288, .line_size = 128, .num_lines = 4096,
+					.associativity = 8 }
+			,
+			[1] = { .type = PAPI_MH_TYPE_EMPTY, .size = -1, .line_size = -1,
+					.num_lines = -1, .associativity = -1 }
+			}
+		   }
+		  ,
+		  [2] = { // level 3 begins
+			.tlb = {
+			[0] = { .type = PAPI_MH_TYPE_EMPTY, .num_entries = -1,
+				.page_size = -1, .associativity = -1 }
+			,
+			[1] = { .type = PAPI_MH_TYPE_EMPTY, .num_entries = -1,
+				.page_size = -1, .associativity = -1 }
+			}
+			,
+			.cache = {
+			[0] = { .type = PAPI_MH_TYPE_UNIFIED | PAPI_MH_TYPE_PSEUDO_LRU,
+					.size = 10485760, .line_size = 128, .num_lines = 81920,
+					.associativity = 20 }
+			,
+			[1] = { .type = PAPI_MH_TYPE_EMPTY, .size = -1, .line_size = -1,
+					.num_lines = -1, .associativity = -1 }
+			}
+		   }
+		  ,
+		  }
+		 },
+		{3,
+		 {
+		  [0] = { // level 1 begins
+			.tlb = {
+			/// POWER10 has an ERAT (Effective to Real Address
+			/// Translation) instead of a TLB.  For the purposes of this
+			/// data, we will treat it like a TLB.
+			[0] = { .type = PAPI_MH_TYPE_INST,
+					.num_entries = 64, .page_size = 0,
+					.associativity = SHRT_MAX }
+			,
+			[1] = { .type = PAPI_MH_TYPE_DATA,
+					.num_entries = 64, .page_size = 0,
+					.associativity = SHRT_MAX }
+			}
+			,
+			.cache = { // level 1 caches begin
+			[0] = { .type = PAPI_MH_TYPE_INST | PAPI_MH_TYPE_PSEUDO_LRU,
+					.size = 49152, .line_size = 128, .num_lines = 384,
+					.associativity = 6 }
+			,
+			[1] = { .type = PAPI_MH_TYPE_DATA | PAPI_MH_TYPE_WT | PAPI_MH_TYPE_LRU,
+					.size = 32768, .line_size = 128, .num_lines = 256,
+					.associativity = 8 }
+			}
+		   }
+		  ,
+		  [1] = { // level 2 begins
+			.tlb = {
+			[0] = { .type = PAPI_MH_TYPE_UNIFIED, .num_entries = 4096,
+				.page_size = 0, .associativity = 4 }
+			,
+			[1] = { .type = PAPI_MH_TYPE_EMPTY, .num_entries = -1,
+				.page_size = -1, .associativity = -1 }
+			}
+			,
+			.cache = {
+			[0] = { .type = PAPI_MH_TYPE_UNIFIED | PAPI_MH_TYPE_PSEUDO_LRU,
+					.size = 1048576, .line_size = 128, .num_lines = 8192,
+					.associativity = 8 }
+			,
+			[1] = { .type = PAPI_MH_TYPE_EMPTY, .size = -1, .line_size = -1,
+					.num_lines = -1, .associativity = -1 }
+			}
+		   }
+		  ,
+		  [2] = { // level 3 begins
+			.tlb = {
+			[0] = { .type = PAPI_MH_TYPE_EMPTY, .num_entries = -1,
+				.page_size = -1, .associativity = -1 }
+			,
+			[1] = { .type = PAPI_MH_TYPE_EMPTY, .num_entries = -1,
+				.page_size = -1, .associativity = -1 }
+			}
+			,
+			.cache = {
+			[0] = { .type = PAPI_MH_TYPE_UNIFIED | PAPI_MH_TYPE_PSEUDO_LRU,
+					.size = 4194304, .line_size = 128, .num_lines = 32768,
+					.associativity = 16 }
+			,
+			[1] = { .type = PAPI_MH_TYPE_EMPTY, .size = -1, .line_size = -1,
+					.num_lines = -1, .associativity = -1 }
+			}
+		   }
+		  ,
+		  }
+		 }						 // POWER10 end
 };
 
 #define SPRN_PVR 0x11F		 /* Processor Version Register */
@@ -620,11 +756,17 @@ ppc64_get_memory_info( PAPI_hw_info_t * hw_info )
 		index = 3;
 		break;
 	case 0x4b:				 /* POWER8 */
-	case 0x4e:				 /* POWER9 */
 		index = 4;
+		break;
+	case 0x4e:				 /* POWER9 */
+		index = 5;
+		break;
+	case 0x80:				 /* POWER10 */
+		index = 6;
 		break;
 	default:
 		index = -1;
+		hw_info->mem_hierarchy.levels = 0;
 		break;
 	}
 
@@ -895,6 +1037,128 @@ sparc_get_memory_info( PAPI_hw_info_t * hw_info )
 #endif
 
 
+#if defined(__aarch64__)
+
+PAPI_mh_info_t sys_mem_info[] = {
+	{2,						 // Fujitsu A64FX begin
+	 {
+	  [0] = { // level 1 begins
+		.tlb = {
+		[0] = { .type = PAPI_MH_TYPE_INST | PAPI_MH_TYPE_FIFO,
+				.num_entries = 16, .page_size = 65536,
+				.associativity = SHRT_MAX }
+		,
+		[1] = { .type = PAPI_MH_TYPE_DATA | PAPI_MH_TYPE_FIFO,
+				.num_entries = 16, .page_size = 65536,
+				.associativity = SHRT_MAX }
+		}
+		,
+		.cache = { // level 1 caches begin
+		[0] = { .type = PAPI_MH_TYPE_INST,
+				.size = 65536, .line_size = 256, .num_lines = 64,
+				.associativity = 4 }
+		,
+		[1] = { .type = PAPI_MH_TYPE_DATA | PAPI_MH_TYPE_WB,
+				.size = 65536, .line_size = 256, .num_lines = 64,
+				.associativity = 4 }
+		}
+	   }
+	  ,
+	  [1] = { // level 2 begins
+		.tlb = {
+		[0] = { .type = PAPI_MH_TYPE_INST | PAPI_MH_TYPE_LRU, .num_entries = 1024,
+			.page_size = 65536, .associativity = 4 }
+		,
+		[1] = { .type = PAPI_MH_TYPE_DATA | PAPI_MH_TYPE_LRU, .num_entries = 1024,
+			.page_size = 65536, .associativity = 4 }
+		}
+		,
+		.cache = {
+		[0] = { .type = PAPI_MH_TYPE_UNIFIED | PAPI_MH_TYPE_WB,
+				.size = 8388608, .line_size = 256, .num_lines = 2048,
+				.associativity = 16 }
+		,
+		[1] = { .type = PAPI_MH_TYPE_EMPTY, .size = -1, .line_size = -1,
+				.num_lines = -1, .associativity = -1 }
+		}
+	   }
+	  ,
+	  }
+	 }						 // Fujitsu A64FX end
+};
+
+#define IMPLEMENTER_FUJITSU 0x46
+#define PARTNUM_FUJITSU_A64FX 0x001
+
+int
+aarch64_get_memory_info( PAPI_hw_info_t * hw_info )
+{
+	unsigned int implementer, partnum;
+
+	implementer = hw_info->vendor;
+	partnum = hw_info->cpuid_model;
+
+	int index = -1;
+	switch ( implementer ) {
+	case IMPLEMENTER_FUJITSU:
+		switch ( partnum ) {
+		case PARTNUM_FUJITSU_A64FX: /* Fujitsu A64FX */
+			index = 0;
+			break;
+		default:
+			generic_get_memory_info (hw_info);
+			return 0;
+		}
+		break;
+	default:
+		generic_get_memory_info (hw_info);
+		return 0;
+	}
+
+	if ( index != -1 ) {
+		int cache_level;
+		PAPI_mh_info_t sys_mh_inf = sys_mem_info[index];
+		PAPI_mh_info_t *mh_inf = &hw_info->mem_hierarchy;
+		mh_inf->levels = sys_mh_inf.levels;
+		PAPI_mh_level_t *level = mh_inf->level;
+		PAPI_mh_level_t sys_mh_level;
+		for ( cache_level = 0; cache_level < sys_mh_inf.levels; cache_level++ ) {
+			sys_mh_level = sys_mh_inf.level[cache_level];
+			int cache_idx;
+			for ( cache_idx = 0; cache_idx < 2; cache_idx++ ) {
+				// process TLB info
+				PAPI_mh_tlb_info_t curr_tlb = sys_mh_level.tlb[cache_idx];
+				int type = curr_tlb.type;
+				if ( type != PAPI_MH_TYPE_EMPTY ) {
+					level[cache_level].tlb[cache_idx].type = type;
+					level[cache_level].tlb[cache_idx].associativity =
+						curr_tlb.associativity;
+					level[cache_level].tlb[cache_idx].num_entries =
+						curr_tlb.num_entries;
+				}
+			}
+			for ( cache_idx = 0; cache_idx < 2; cache_idx++ ) {
+				// process cache info
+				PAPI_mh_cache_info_t curr_cache = sys_mh_level.cache[cache_idx];
+				int type = curr_cache.type;
+				if ( type != PAPI_MH_TYPE_EMPTY ) {
+					level[cache_level].cache[cache_idx].type = type;
+					level[cache_level].cache[cache_idx].associativity =
+						curr_cache.associativity;
+					level[cache_level].cache[cache_idx].size = curr_cache.size;
+					level[cache_level].cache[cache_idx].line_size =
+						curr_cache.line_size;
+					level[cache_level].cache[cache_idx].num_lines =
+						curr_cache.num_lines;
+				}
+			}
+		}
+	}
+	return 0;
+}
+#endif
+
+
 /* Fallback Linux code to read the cache info from /sys */
 int
 generic_get_memory_info( PAPI_hw_info_t *hw_info )
@@ -902,9 +1166,12 @@ generic_get_memory_info( PAPI_hw_info_t *hw_info )
 
 	int type=0,level,result;
 	int size,line_size,associativity,sets;
+	int write_policy,allocation_policy;
 	DIR *dir;
 	FILE *fff;
 	char filename[BUFSIZ],type_string[BUFSIZ];
+	char *str_result;
+	char write_policy_string[BUFSIZ],allocation_policy_string[BUFSIZ];
 	struct dirent *d;
 	int max_level=0;
 	int level_count,level_index;
@@ -980,9 +1247,9 @@ generic_get_memory_info( PAPI_hw_info_t *hw_info )
 			MEMDBG("Cannot open type\n");
 			goto unrecoverable_error;
 		}
-		result=fscanf(fff,"%s",type_string);
+		str_result=fgets(type_string, BUFSIZ, fff);
 		fclose(fff);
-		if (result!=1) {
+		if (str_result==NULL) {
 			MEMDBG("Could not read cache type\n");
 			goto unrecoverable_error;
 		}
@@ -995,7 +1262,62 @@ generic_get_memory_info( PAPI_hw_info_t *hw_info )
 		if (!strcmp(type_string,"Unified")) {
 			type=PAPI_MH_TYPE_UNIFIED;
 		}
-		L[level_index].cache[level_count].type=type;
+
+		/********************/
+		/* Get write_policy */
+		/********************/
+		write_policy=0;
+		sprintf(filename,
+			"/sys/devices/system/cpu/cpu0/cache/%s/write_policy",d->d_name);
+		fff=fopen(filename,"r");
+		if (fff==NULL) {
+			MEMDBG("Cannot open write_policy\n");
+			goto get_allocation_policy;
+		}
+		str_result=fgets(write_policy_string, BUFSIZ, fff);
+		fclose(fff);
+		if (str_result==NULL) {
+			MEMDBG("Could not read cache write_policy\n");
+			goto get_allocation_policy;
+		}
+		if (!strcmp(write_policy_string,"WriteThrough")) {
+			write_policy=PAPI_MH_TYPE_WT;
+		}
+		if (!strcmp(write_policy_string,"WriteBack")) {
+			write_policy=PAPI_MH_TYPE_WB;
+		}
+
+get_allocation_policy:
+
+		/*************************/
+		/* Get allocation_policy */
+		/*************************/
+		allocation_policy=0;
+		sprintf(filename,
+			"/sys/devices/system/cpu/cpu0/cache/%s/allocation_policy",d->d_name);
+		fff=fopen(filename,"r");
+		if (fff==NULL) {
+			MEMDBG("Cannot open allocation_policy\n");
+			goto get_size;
+		}
+		str_result=fgets(allocation_policy_string, BUFSIZ, fff);
+		fclose(fff);
+		if (str_result==NULL) {
+			MEMDBG("Could not read cache allocation_policy\n");
+			goto get_size;
+		}
+		if (!strcmp(allocation_policy_string,"ReadAllocate")) {
+			allocation_policy=PAPI_MH_TYPE_RD_ALLOC;
+		}
+		if (!strcmp(allocation_policy_string,"WriteAllocate")) {
+			allocation_policy=PAPI_MH_TYPE_WR_ALLOC;
+		}
+		if (!strcmp(allocation_policy_string,"ReadWriteAllocate")) {
+			allocation_policy=PAPI_MH_TYPE_RW_ALLOC;
+		}
+
+get_size:
+		L[level_index].cache[level_count].type=type | write_policy | allocation_policy;
 
 		/*************/
 		/* Get Size  */
@@ -1145,6 +1467,8 @@ _linux_get_memory_info( PAPI_hw_info_t * hwinfo, int cpu_type )
 #elif defined(__arm__)
 	#warning "WARNING! linux_get_memory_info() does nothing on ARM32!"
         generic_get_memory_info (hwinfo);
+#elif defined(__aarch64__)
+	aarch64_get_memory_info( hwinfo );
 #else
         generic_get_memory_info (hwinfo);
 #endif
@@ -1204,9 +1528,9 @@ _linux_update_shlib_info( papi_mdi_t *mdi )
 				if ( strcmp( mdi->exe_info.fullname, mapname )
 					 == 0 ) {
 					mdi->exe_info.address_info.text_start =
-						( caddr_t ) begin;
+						( vptr_t ) begin;
 					mdi->exe_info.address_info.text_end =
-						( caddr_t ) ( begin + size );
+						( vptr_t ) ( begin + size );
 				}
 				t_index++;
 			} else if ( ( perm[0] == 'r' ) && ( perm[1] == 'w' ) &&
@@ -1216,9 +1540,9 @@ _linux_update_shlib_info( papi_mdi_t *mdi )
 						  ( mdi->exe_info.fullname,
 							mapname ) == 0 ) ) {
 				mdi->exe_info.address_info.data_start =
-					( caddr_t ) begin;
+					( vptr_t ) begin;
 				mdi->exe_info.address_info.data_end =
-					( caddr_t ) ( begin + size );
+					( vptr_t ) ( begin + size );
 				d_index++;
 			} else if ( ( perm[0] == 'r' ) && ( perm[1] == 'w' ) &&
 						( inode == 0 )
@@ -1227,9 +1551,9 @@ _linux_update_shlib_info( papi_mdi_t *mdi )
 						  ( mdi->exe_info.fullname,
 							lastmapname ) == 0 ) ) {
 				mdi->exe_info.address_info.bss_start =
-					( caddr_t ) begin;
+					( vptr_t ) begin;
 				mdi->exe_info.address_info.bss_end =
-					( caddr_t ) ( begin + size );
+					( vptr_t ) ( begin + size );
 				b_index++;
 			}
 		} else if ( !counting ) {
@@ -1237,8 +1561,8 @@ _linux_update_shlib_info( papi_mdi_t *mdi )
 				if ( strcmp( mdi->exe_info.fullname, mapname )
 					 != 0 ) {
 					t_index++;
-					tmp[t_index - 1].text_start = ( caddr_t ) begin;
-					tmp[t_index - 1].text_end = ( caddr_t ) ( begin + size );
+					tmp[t_index - 1].text_start = ( vptr_t ) begin;
+					tmp[t_index - 1].text_end = ( vptr_t ) ( begin + size );
 					strncpy( tmp[t_index - 1].name, mapname, PAPI_HUGE_STR_LEN );
                tmp[t_index - 1].name[PAPI_HUGE_STR_LEN-1]=0;
 				}
@@ -1249,14 +1573,14 @@ _linux_update_shlib_info( papi_mdi_t *mdi )
 						 mapname ) != 0 )
 					 && ( t_index > 0 ) &&
 					 ( tmp[t_index - 1].data_start == 0 ) ) {
-					tmp[t_index - 1].data_start = ( caddr_t ) begin;
-					tmp[t_index - 1].data_end = ( caddr_t ) ( begin + size );
+					tmp[t_index - 1].data_start = ( vptr_t ) begin;
+					tmp[t_index - 1].data_end = ( vptr_t ) ( begin + size );
 				}
 			} else if ( ( perm[0] == 'r' ) && ( perm[1] == 'w' ) &&
 						( inode == 0 ) ) {
 				if ( ( t_index > 0 ) && ( tmp[t_index - 1].bss_start == 0 ) ) {
-					tmp[t_index - 1].bss_start = ( caddr_t ) begin;
-					tmp[t_index - 1].bss_end = ( caddr_t ) ( begin + size );
+					tmp[t_index - 1].bss_start = ( vptr_t ) begin;
+					tmp[t_index - 1].bss_end = ( vptr_t ) ( begin + size );
 				}
 			}
 		}

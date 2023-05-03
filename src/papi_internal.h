@@ -376,8 +376,8 @@ typedef struct _papi_int_inherit
 typedef struct _papi_int_addr_range { /* if both are zero, range is disabled */
    EventSetInfo_t *ESI;
    int domain;
-   caddr_t start;                /**< start address of an address range */
-   caddr_t end;                  /**< end address of an address range */
+   vptr_t start;                /**< start address of an address range */
+   vptr_t end;                  /**< end address of an address range */
    int start_off;                /**< offset from start address as programmed in hardware */
    int end_off;                  /**< offset from end address as programmed in hardware */
                                  /**< if offsets are undefined, they are both set to -1 */
@@ -491,5 +491,35 @@ int _papi_hwi_invalid_cmp( int cidx );
 int _papi_hwi_component_index( int event_code );
 int _papi_hwi_native_to_eventcode(int cidx, int event_code, int ntv_idx, const char *event_name);
 int _papi_hwi_eventcode_to_native(int event_code);
+
+enum {
+    PAPI_SYSDETECT_QUERY__DEV_TYPE_ENUM,
+    PAPI_SYSDETECT_QUERY__DEV_TYPE_ATTR,
+    PAPI_SYSDETECT_QUERY__DEV_ATTR,
+};
+
+typedef struct {
+    int query_type;
+    union {
+        struct {
+            int modifier;
+        } enumerate;
+
+        struct {
+            void *handle;
+            PAPI_dev_type_attr_e attr;
+        } dev_type;
+
+        struct {
+            void *handle;
+            int id;
+            PAPI_dev_attr_e attr;
+        } dev;
+    } query;
+} _papi_hwi_sysdetect_t;
+
+int _papi_hwi_enum_dev_type(int enum_modifier, void **handle);
+int _papi_hwi_get_dev_type_attr(void *handle, PAPI_dev_type_attr_e attr, void *val);
+int _papi_hwi_get_dev_attr(void *handle, int id, PAPI_dev_attr_e attr, void *val);
 
 #endif /* PAPI_INTERNAL_H */

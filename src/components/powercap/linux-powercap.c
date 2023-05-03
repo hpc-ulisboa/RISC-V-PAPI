@@ -10,12 +10,10 @@
 #include <stdio.h>
 #include <dirent.h>
 #include <unistd.h>
-#include <dirent.h>
 #include <fcntl.h>
 #include <string.h>
 #include <stdint.h>
 #include <errno.h>
-#include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 
@@ -54,6 +52,9 @@ typedef struct _powercap_reg_alloc {
 static char read_buff[PAPI_MAX_STR_LEN];
 static char write_buff[PAPI_MAX_STR_LEN];
 
+static long long max_pkg_energy_count;
+static long long max_component_energy_count;
+
 static int num_events=0;
 
 // package events
@@ -61,12 +62,12 @@ static int num_events=0;
 #define PKG_MAX_ENERGY_RANGE        1
 #define PKG_MAX_POWER_A             2
 #define PKG_POWER_LIMIT_A           3
-#define PKG_TIME_WINDOW_A	        4
-#define PKG_MAX_POWER_B  	        5
+#define PKG_TIME_WINDOW_A           4
+#define PKG_MAX_POWER_B             5
 #define PKG_POWER_LIMIT_B           6
-#define PKG_TIME_WINDOW_B	        7
-#define PKG_ENABLED 	     	    8
-#define PKG_NAME 	     	        9
+#define PKG_TIME_WINDOW_B           7
+#define PKG_ENABLED                 8
+#define PKG_NAME                    9
 
 #define PKG_NUM_EVENTS              10
 static int   pkg_events[PKG_NUM_EVENTS]        = {PKG_ENERGY, PKG_MAX_ENERGY_RANGE, PKG_MAX_POWER_A, PKG_POWER_LIMIT_A, PKG_TIME_WINDOW_A, PKG_MAX_POWER_B, PKG_POWER_LIMIT_B, PKG_TIME_WINDOW_B, PKG_ENABLED, PKG_NAME};
@@ -80,9 +81,9 @@ static mode_t   pkg_sys_flags[PKG_NUM_EVENTS]  = {O_RDONLY, O_RDONLY, O_RDONLY, 
 #define COMPONENT_MAX_ENERGY_RANGE  11
 #define COMPONENT_MAX_POWER_A       12
 #define COMPONENT_POWER_LIMIT_A     13
-#define COMPONENT_TIME_WINDOW_A	    14
-#define COMPONENT_ENABLED 	     	15
-#define COMPONENT_NAME 	     	    16
+#define COMPONENT_TIME_WINDOW_A     14
+#define COMPONENT_ENABLED           15
+#define COMPONENT_NAME              16
 
 #define COMPONENT_NUM_EVENTS        7
 static int   component_events[COMPONENT_NUM_EVENTS]      = {COMPONENT_ENERGY, COMPONENT_MAX_ENERGY_RANGE, COMPONENT_MAX_POWER_A, COMPONENT_POWER_LIMIT_A, COMPONENT_TIME_WINDOW_A, COMPONENT_ENABLED, COMPONENT_NAME};
@@ -101,6 +102,7 @@ typedef struct _powercap_control_state {
   long long which_counter[POWERCAP_MAX_COUNTERS];
   long long need_difference[POWERCAP_MAX_COUNTERS];
   long long lastupdate;
+  int active_counters;
 } _powercap_control_state_t;
 
 typedef struct _powercap_context {
@@ -113,6 +115,13 @@ papi_vector_t _powercap_vector;
 /***************************************************************************/
 /******  BEGIN FUNCTIONS  USED INTERNALLY SPECIFIC TO THIS COMPONENT *******/
 /***************************************************************************/
+
+static long long map_index_to_counter( hwd_control_state_t *ctl,  int index )
+{
+  _powercap_control_state_t* control = ( _powercap_control_state_t* ) ctl;
+
+  return control->which_counter[index];
+}
 
 /* Null terminated version of strncpy */
 static char * _local_strlcpy( char *dst, const char *src, size_t size )
@@ -156,7 +165,7 @@ static int _powercap_init_thread( hwd_context_t *ctx )
  */
 static int _powercap_init_component( int cidx )
 {
-
+    int retval = PAPI_OK;
   int num_sockets = -1;
   int s = -1, e = -1, c = -1;
   long unsigned int strErr;
@@ -175,7 +184,8 @@ static int _powercap_init_component( int cidx )
   if ( hw_info->vendor!=PAPI_VENDOR_INTEL ) {
     strCpy=strncpy(_powercap_vector.cmp_info.disabled_reason, "Not an Intel processor", PAPI_MAX_STR_LEN);
     if (strCpy == NULL) HANDLE_STRING_ERROR;
-    return PAPI_ENOSUPP;
+    retval = PAPI_ENOSUPP;
+    goto fn_fail;
   }
 
   // store number of sockets for adding events
@@ -227,6 +237,12 @@ static int _powercap_init_component( int cidx )
         if (strErr > sizeof(powercap_ntv_events[num_events].description)) HANDLE_STRING_ERROR;
       }
 
+      if(powercap_ntv_events[num_events].type == PKG_MAX_ENERGY_RANGE) {
+        int sz = pread(event_fds[num_events], read_buff, PAPI_MAX_STR_LEN, 0);
+        read_buff[sz] = '\0';
+        max_pkg_energy_count = atoll(read_buff);
+      }
+
       num_events++;
     }
 
@@ -269,6 +285,12 @@ static int _powercap_init_component( int cidx )
           if (strErr > sizeof(powercap_ntv_events[num_events].description)) HANDLE_STRING_ERROR;
         }
 
+        if(powercap_ntv_events[num_events].type == COMPONENT_MAX_ENERGY_RANGE) {
+          int sz = pread(event_fds[num_events], read_buff, PAPI_MAX_STR_LEN, 0);
+          read_buff[sz] = '\0';
+          max_component_energy_count = atoll(read_buff);
+        }
+
         num_events++;
       }
 
@@ -290,7 +312,11 @@ static int _powercap_init_component( int cidx )
   /* Export the component id */
   _powercap_vector.cmp_info.CmpIdx = cidx;
 
-  return PAPI_OK;
+  fn_exit:
+    _papi_hwd[cidx]->cmp_info.disabled = retval;
+    return retval;
+  fn_fail:
+    goto fn_exit;
 }
 
 
@@ -308,7 +334,7 @@ static int _powercap_init_control_state( hwd_control_state_t *ctl )
     int i;
     for (i = 0; i < num_events; i++) {
         if ((powercap_ntv_events[i].type == PKG_ENERGY) || (powercap_ntv_events[i].type == COMPONENT_ENERGY)) {
-  	    control->need_difference[i] = 1;
+            control->need_difference[i] = 1;
         }
     }
 
@@ -357,30 +383,38 @@ _powercap_read( hwd_context_t *ctx, hwd_control_state_t *ctl,
 
   long long start_val = 0;
   long long curr_val = 0;
-  int c;
+  int c, i;
 
-  for( c = 0; c < num_events; c++ ) {
-    start_val = context->start_value[c];
-    curr_val = read_powercap_value(c);
+  for( c = 0; c < control->active_counters; c++ ) {
+    i = map_index_to_counter(ctl, c);
+    start_val = context->start_value[i];
+    curr_val = read_powercap_value(i);
 
-    SUBDBG("%d, start value: %lld, current value %lld\n", c, start_val, curr_val);
+    SUBDBG("%d, start value: %lld, current value %lld\n", i, start_val, curr_val);
 
     if(start_val) {
 
       /* Make sure an event is a counter. */
-      if (control->need_difference[c] == 1) {
+      if (control->need_difference[i] == 1) {
 
-	/* Wraparound. */
-	if(start_val > curr_val) {
-	  SUBDBG("Wraparound!\nstart value:\t%lld,\tcurrent value:%lld\n", start_val, curr_val);
-	  curr_val += (0x100000000 - start_val);
-	}
-	/* Normal subtraction. */
-	else if (start_val < curr_val) {
-	  SUBDBG("Normal subtraction!\nstart value:\t%lld,\tcurrent value:%lld\n", start_val, curr_val);
-	  curr_val -= start_val;
-	}
-	SUBDBG("Final value: %lld\n", curr_val);
+        /* Wraparound. */
+        if(start_val > curr_val) {
+          SUBDBG("Wraparound!\nstart value:\t%lld,\tcurrent value:%lld\n", start_val, curr_val);
+          if( powercap_ntv_events[i].type == PKG_ENERGY ) {
+            curr_val += (max_pkg_energy_count - start_val);
+          } else if( powercap_ntv_events[i].type == COMPONENT_ENERGY ) {
+            curr_val += (max_component_energy_count - start_val);
+          } else {
+            curr_val += (0x100000000 - start_val);
+          }
+        }
+
+        /* Normal subtraction. */
+        else if (start_val < curr_val) {
+          SUBDBG("Normal subtraction!\nstart value:\t%lld,\tcurrent value:%lld\n", start_val, curr_val);
+          curr_val -= start_val;
+        }
+        SUBDBG("Final value: %lld\n", curr_val);
 
       }
     }
@@ -398,11 +432,12 @@ static int _powercap_write( hwd_context_t * ctx, hwd_control_state_t * ctl, long
     ( void ) ctx;
     _powercap_control_state_t *control = ( _powercap_control_state_t * ) ctl;
 
-    int i;
+    int c, i;
 
-    for(i=0;i<num_events;i++) {
-      if( (powercap_ntv_events[control->which_counter[i]].type == PKG_POWER_LIMIT_A) || (powercap_ntv_events[control->which_counter[i]].type == PKG_POWER_LIMIT_B) ) {
-        write_powercap_value(control->which_counter[i], values[i]);
+    for(c=0;c<control->active_counters;c++) {
+      i = map_index_to_counter(ctl, c);
+      if( (powercap_ntv_events[i].type == PKG_POWER_LIMIT_A) || (powercap_ntv_events[i].type == PKG_POWER_LIMIT_B) ) {
+        write_powercap_value(i, values[c]);
       }
     }
 
@@ -446,6 +481,8 @@ static int _powercap_update_control_state( hwd_control_state_t *ctl,
   int i, index;
 
   _powercap_control_state_t* control = ( _powercap_control_state_t* ) ctl;
+  control->active_counters = count;
+
   if (count==0) return PAPI_OK;
 
   for( i = 0; i < count; i++ ) {
@@ -532,9 +569,9 @@ static int _powercap_ntv_code_to_info( unsigned int EventCode, PAPI_event_info_t
     if ( index < 0 || index >= num_events ) 
         return PAPI_ENOEVNT;
 
-    _local_strlcpy( info->symbol, powercap_ntv_events[index].name, sizeof( info->symbol ));
-    _local_strlcpy( info->long_descr, powercap_ntv_events[index].description, sizeof( info->long_descr ) );
-    _local_strlcpy( info->units, powercap_ntv_events[index].units, sizeof( info->units ) );
+    _local_strlcpy( info->symbol, powercap_ntv_events[index].name, PAPI_MAX_STR_LEN );
+    _local_strlcpy( info->long_descr, powercap_ntv_events[index].description, PAPI_MAX_STR_LEN );
+    _local_strlcpy( info->units, powercap_ntv_events[index].units, PAPI_MIN_STR_LEN-1 );
 
     info->data_type = powercap_ntv_events[index].return_type;
     return PAPI_OK;
