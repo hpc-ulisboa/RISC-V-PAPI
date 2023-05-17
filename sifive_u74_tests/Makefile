@@ -30,7 +30,7 @@ CFLAGS=-Wextra -Wall
 # Compiler mode
 MODE=-O0
 
-INCLUDE=-I../../papi/include
+INCLUDE=-I${PAPI_INCLUDE}
 PAPILIB=../src/libpapi.a
 
 SRCS = 	gettime_time.c \

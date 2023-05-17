@@ -1,6 +1,18 @@
 # RISC-V-PAPI
 PAPI support for RISC-V events
 
+## Installing PAPI on a RISC-V computer
+
+```
+git clone https://github.com/hpc-ulisboa/RISC-V-PAPI.git
+cd RISC-V-PAPI/src/
+./configure --prefix=<desired install location>
+make
+make install
+```
+## Testing PAPI functionality on a SiFive U74-MC core
+Some tests that show PAPI and perf_events functionality are available in `sifive_u74_tests/`
+
 **[PAPI: The Performance Application Programming Interface](https://icl.utk.edu/exa-papi/)**
 
 **[Innovative Computing Laboratory (ICL)](http://www.icl.utk.edu/)**
