@@ -19,6 +19,65 @@ Some tests that show PAPI and perf_events functionality are available in `sifive
 
 **University of Tennessee, Knoxville (UTK)**
 
+## List of available events on RISC-V
+### SiFive U74-MC
+```
+PAPI exception code                 => Description
+
+"EXCEPTION_TAKEN"                   => "Exception taken"
+"INTEGER_LOAD_RETIRED"              => "Integer load instruction retired"
+"INTEGER_STORE_RETIRED"             => "Integer store instruction retired"
+"ATOMIC_MEMORY_RETIRED"             => "Atomic memory operation retired"
+"SYSTEM_INSTRUCTION_RETIRED"        => "System instruction retired"
+"INTEGER_ARITHMETIC_RETIRED"        => "Integer arithmetic instruction retired"
+"CONDITIONAL_BRANCH_RETIRED"        => "Conditional branch retired"
+"JAL_INSTRUCTION_RETIRED"           => "JAL instruction retired"
+"JALR_INSTRUCTION_RETIRED"          => "JALR instruction retired"
+"INTEGER_MULTIPLICATION_RETIRED"    => "Integer multiplication instruction retired"
+"INTEGER_DIVISION_RETIRED"          => "Integer division instruction retired"
+"FP_LOAD_RETIRED"                   => "Floating-point load instruction retired"
+"FP_STORE_RETIRED"                  => "Floating-point store instruction retired"
+"FP_ADDITION_RETIRED"               => "Floating-point addition retired"
+"FP_MULTIPLICATION_RETIRED"         => "Floating-point multiplication retired"
+"FP_FUSEDMADD_RETIRED"              => "Floating-point fused multiply-add retired"
+"FP_DIV_SQRT_RETIRED"               => "Floating-point division or square-root retired"
+"OTHER_FP_RETIRED"                  => "Other floating-point instruction retired"
+"ADDRESSGEN_INTERLOCK"              => "Address-generation interlock"
+"LONGLAT_INTERLOCK"                 => "Long-latency interlock"
+"CSR_READ_INTERLOCK"                => "CSR read interlock"
+"ICACHE_ITIM_BUSY"                  => "Instruction cache/ITIM busy"
+"DCACHE_DTIM_BUSY"                  => "Data cache/DTIM busy"
+"BRANCH_DIRECTION_MISPREDICTION"    => "Branch direction misprediction"
+"BRANCH_TARGET_MISPREDICTION"       => "Branch/jump target misprediction"
+"PIPE_FLUSH_CSR_WRITE"              => "Pipeline flush from CSR write"
+"PIPE_FLUSH_OTHER_EVENT"            => "Pipeline flush from other event"
+"INTEGER_MULTIPLICATION_INTERLOCK"  => "Integer multiplication interlock"
+"FP_INTERLOCK"                      => "Floating-point interlock"
+"ICACHE_RETIRED"                    => "Instruction cache miss"
+"DCACHE_MISS_MMIO_ACCESSES"         => "Data cache miss or memory-mapped I/O access"
+"DCACHE_WRITEBACK"                  => "Data cache write-back"
+"INST_TLB_MISS"                     => "Instruction TLB miss"
+"DATA_TLB_MISS"                     => "Data TLB miss"
+"UTLB_MISS"                         => "UTLB miss"
+
+// PAPI preset events available
+"PAPI_L1_DCM"
+"PAPI_L1_ICM"
+"PAPI_L1_TCM"
+"PAPI_TLB_DM"
+"PAPI_TLB_IM"
+"PAPI_TLB_TL"
+"PAPI_BR_UCN"
+"PAPI_BR_CN"
+"PAPI_BR_MSP"
+"PAPI_FMA_INS"
+"PAPI_TOT_INS"
+"PAPI_LD_INS"
+"PAPI_SR_INS"
+"PAPI_TOT_CYC"
+"PAPI_FML_INS"
+"PAPI_FAD_INS"
+```
 
 ***
 [TOC]
