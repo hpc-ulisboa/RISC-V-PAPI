@@ -110,7 +110,7 @@ int pfm_riscv_detect(void *this)
     if (ret == -1)
         return PFM_ERR_NOTSUPP;
     if (strcmp(buffer, "sifive,u74-mc") == 0)
-        pfm_riscv_cfg.architecture = SIFIVE_U74_MC;
+        pfm_riscv_cfg.implementation = SIFIVE_U74_MC;
     else
         return PFM_ERR_NOTSUPP;
 

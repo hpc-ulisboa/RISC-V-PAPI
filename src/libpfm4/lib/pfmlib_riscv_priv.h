@@ -40,10 +40,10 @@ typedef union pfm_riscv_reg
 
 typedef enum {
     SIFIVE_U74_MC   // SiFive U74-MC Core
-} pfm_riscv_architecture_t;
+} pfm_riscv_implementation_t;
 
 typedef struct {
-    pfm_riscv_architecture_t architecture;
+    pfm_riscv_implementation_t implementation;
 } pfm_riscv_config_t;
 
 #define RISCV_PLM (0x0)
