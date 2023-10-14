@@ -202,7 +202,7 @@ int pfm_riscv_get_event_info(void *this, int idx, pfm_event_info_t *info)
     info->idx = idx;
     info->pmu = pmu->pmu;
 
-    /* no attributes defined for ARM yet */
+    /* no attributes defined for RISC-V yet */
     info->nattrs = 0;
 
     return PFM_SUCCESS;
