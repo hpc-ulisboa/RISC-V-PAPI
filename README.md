@@ -1,6 +1,32 @@
 # RISC-V-PAPI
 PAPI support for RISC-V events
 
+## Publication
+
+If you use RISC-V-PAPI in your academic work you can cite us:
+
+<details>
+<summary>RISC-V-PAPI Publication</summary>
+<p>
+
+```
+@INPROCEEDINGS{10265733,
+  author={Domingos, Joao Mario and Rocha, Tiago and Neves, Nuno and Roma, Nuno and Tomás, Pedro and Sousa, Leonel},
+  booktitle={2023 IEEE 34th International Conference on Application-specific Systems, Architectures and Processors (ASAP)}, 
+  title={Supporting RISC-V Performance Counters Through Linux Performance Analysis Tools}, 
+  year={2023},
+  volume={},
+  number={},
+  pages={94-101},
+  doi={10.1109/ASAP57973.2023.00027}
+}
+```
+
+</p>
+</details>
+
+This paper was presented at ASAP 2023. The presentation is available [here](./ASAP23_Supporting_RISC-V_Performance_Counters.pdf).
+
 ## Installing PAPI on a RISC-V computer
 
 ```
