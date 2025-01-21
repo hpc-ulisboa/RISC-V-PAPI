@@ -158,6 +158,8 @@ decode_vendor_string( char *s, int *vendor )
 		*vendor = PAPI_VENDOR_MIPS;
 	else if ( strcasecmp( s, "RISCV_SIFIVE" ) == 0)
 		*vendor = PAPI_VENDOR_RISCV_SIFIVE;
+	else if ( strcasecmp( s, "0x489" ) == 0)
+		*vendor = PAPI_VENDOR_RISCV_SIFIVE;
 	else
 		*vendor = PAPI_VENDOR_UNKNOWN;
 }
