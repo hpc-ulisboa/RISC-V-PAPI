@@ -385,7 +385,11 @@ All of the functions in the PerfAPI should use the following set of constants.
 #define PAPI_VENDOR_ARM_HISILICON 0x48
 #define PAPI_VENDOR_ARM_APM       0x50
 #define PAPI_VENDOR_ARM_QUALCOMM  0x51
-#define PAPI_VENDOR_RISCV_SIFIVE 9
+#define PAPI_VENDOR_RISCV_SIFIVE     9
+#define PAPI_VENDOR_RISCV_SOPHON    10
+#define PAPI_VENDOR_RISCV_EPI       11
+#define PAPI_VENDOR_RISCV_SPACEMIT  12
+
 /** @} */
 
 /** @internal 
