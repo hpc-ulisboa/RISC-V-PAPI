@@ -44,7 +44,7 @@ pfmlib_pmu_t riscv_spacemit_k1_8_support = {
     .supported_plm = RISCV_PLM,
     .pe = riscv_spacemit_k1_8_pe,
     .pmu_detect = pfm_riscv_detect_spacemit_k1_8,
-    .num_cntrs = 4,
+    .num_cntrs = 16,
     .num_fixed_cntrs = 2,
     .max_encoding = 1,
 
