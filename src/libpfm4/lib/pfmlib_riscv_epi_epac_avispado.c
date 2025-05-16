@@ -44,7 +44,7 @@ pfmlib_pmu_t riscv_epi_epac_avispado_support = {
     .supported_plm = RISCV_PLM,
     .pe = riscv_epi_epac_avispado_pe,
     .pmu_detect = pfm_riscv_detect_epi_epac_avispado,
-    .num_cntrs = 4,
+    .num_cntrs = 2,
     .num_fixed_cntrs = 2,
     .max_encoding = 1,
 
