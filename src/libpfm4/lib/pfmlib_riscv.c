@@ -27,6 +27,9 @@
 #include "pfmlib_riscv_priv.h"
 
 #include "events/riscv_sifive_u74_events.h" /* SiFive U74 event tables */
+#include "events/riscv_sophon_sg2042_events.h" /* Sophon SG2042 event tables */
+#include "events/riscv_spacemit_k1_8_events.h" /* SpacemiT K1 8 event tables */
+#include "events/riscv_epi_epac_avispado_events.h" /* EPI Avispado event tables */
 
 pfm_riscv_config_t pfm_riscv_cfg;
 
@@ -110,11 +113,35 @@ int pfm_riscv_detect(void *this)
     if (ret == -1)
         return PFM_ERR_NOTSUPP;
     if (strcmp(buffer, "sifive,u74-mc") == 0)
+    {
         pfm_riscv_cfg.implementation = SIFIVE_U74_MC;
-    else
-        return PFM_ERR_NOTSUPP;
+        return PFM_SUCCESS;
+    }
+    else if (strcmp(buffer, "epi,avispado") == 0)
+    {
+        pfm_riscv_cfg.implementation = EPI_EPAC_AVISPADO;
+        return PFM_SUCCESS;
+    }
 
-    return PFM_SUCCESS;
+    ret = pfmlib_getcpuinfo_attr("model name", buffer, sizeof(buffer));
+    if (ret == -1)
+        return PFM_ERR_NOTSUPP;
+    if (strcmp(buffer, "Spacemit(R) X60") == 0)
+    {
+        pfm_riscv_cfg.implementation = SPACEMIT_K1_8;
+        return PFM_SUCCESS;
+    }
+
+    ret = pfmlib_getcpuinfo_attr("mvendorid", buffer, sizeof(buffer));
+    if (ret == -1)
+        return PFM_ERR_NOTSUPP;
+    if (strcmp(buffer, "0x5b7") == 0)
+    {
+        pfm_riscv_cfg.implementation = SOPHON_SG2042;
+        return PFM_SUCCESS;
+    }
+
+    return PFM_ERR_NOTSUPP;
 }
 
 static void pfm_riscv_display_reg(void *this, pfmlib_event_desc_t *e, pfm_riscv_reg_t reg)

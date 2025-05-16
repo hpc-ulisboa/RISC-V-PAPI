@@ -160,6 +160,12 @@ decode_vendor_string( char *s, int *vendor )
 		*vendor = PAPI_VENDOR_RISCV_SIFIVE;
 	else if ( strcasecmp( s, "0x489" ) == 0)
 		*vendor = PAPI_VENDOR_RISCV_SIFIVE;
+	else if ( strcasecmp( s, "RISCV_SOPHON" ) == 0)
+		*vendor = PAPI_VENDOR_RISCV_SOPHON;
+	else if ( strcasecmp( s, "RISCV_EPI" ) == 0)
+		*vendor = PAPI_VENDOR_RISCV_EPI;
+	else if ( strcasecmp( s, "RISCV_SPACEMIT" ) == 0)
+		*vendor = PAPI_VENDOR_RISCV_SPACEMIT;
 	else
 		*vendor = PAPI_VENDOR_UNKNOWN;
 }
@@ -495,6 +501,23 @@ _linux_get_cpu_info( PAPI_hw_info_t *hwinfo, int *cpuinfo_mhz )
 							{
 								if ((strcasecmp(v, "sifive") == 0))
 									strcpy(hwinfo->vendor_string, "RISCV_SIFIVE");
+								else if ((strcasecmp(v, "epi") == 0))
+									strcpy(hwinfo->vendor_string, "RISCV_EPI");
+								else
+								{
+									s = search_cpu_info(f, "mvendorid");
+									if (s)
+									{
+										char *v;
+										v = strtok(s, ",");
+										if (v)
+										{
+											if ((strcasecmp(v, "0x5b7") == 0))
+											strcpy(hwinfo->vendor_string, "RISCV_SOPHON");
+										}
+									}
+								}
+
 							}
 						}
 					}

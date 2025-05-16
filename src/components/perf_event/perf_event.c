@@ -190,6 +190,21 @@ pe_vendor_fixups(papi_vector_t *vector)
 		vector->cmp_info.default_domain = PAPI_DOM_USER | PAPI_DOM_KERNEL | PAPI_DOM_SUPERVISOR;
 	}
 
+  if (_papi_hwi_system_info.hw_info.vendor == PAPI_VENDOR_RISCV_SOPHON) {
+		vector->cmp_info.available_domains = PAPI_DOM_USER | PAPI_DOM_KERNEL | PAPI_DOM_SUPERVISOR;
+		vector->cmp_info.default_domain = PAPI_DOM_USER | PAPI_DOM_KERNEL | PAPI_DOM_SUPERVISOR;
+	}
+
+  if (_papi_hwi_system_info.hw_info.vendor == PAPI_VENDOR_RISCV_EPI) {
+		vector->cmp_info.available_domains = PAPI_DOM_USER | PAPI_DOM_KERNEL | PAPI_DOM_SUPERVISOR;
+		vector->cmp_info.default_domain = PAPI_DOM_USER | PAPI_DOM_KERNEL | PAPI_DOM_SUPERVISOR;
+	}
+
+	if (_papi_hwi_system_info.hw_info.vendor == PAPI_VENDOR_RISCV_SPACEMIT) {
+		vector->cmp_info.available_domains = PAPI_DOM_USER | PAPI_DOM_KERNEL | PAPI_DOM_SUPERVISOR;
+		vector->cmp_info.default_domain = PAPI_DOM_USER | PAPI_DOM_KERNEL | PAPI_DOM_SUPERVISOR;
+	}
+
 	return PAPI_OK;
 }
 
