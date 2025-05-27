@@ -102,15 +102,15 @@ search_cpu_info( FILE * f, char *search_str)
 {
 	static char line[PAPI_HUGE_STR_LEN] = "";
 	char *s, *start = NULL;
+	size_t search_len = strlen(search_str);
 
 	rewind(f);
 
 	while (fgets(line,PAPI_HUGE_STR_LEN,f)!=NULL) {
-		s=strstr(line,search_str);
-		if (s!=NULL) {
+		if ((strncmp(line, search_str, search_len) == 0) && ((line[search_len] == ':') || (isspace((unsigned char)line[search_len])))) {
 			/* skip all characters in line up to the colon */
 			/* and then spaces */
-			s=strchr(s,':');
+			s=strchr(line,':');
 			if (s==NULL) break;
 			s++;
 			while (isspace(*s)) {
