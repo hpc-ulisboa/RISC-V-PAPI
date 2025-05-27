@@ -503,21 +503,15 @@ _linux_get_cpu_info( PAPI_hw_info_t *hwinfo, int *cpuinfo_mhz )
 									strcpy(hwinfo->vendor_string, "RISCV_SIFIVE");
 								else if ((strcasecmp(v, "epi") == 0))
 									strcpy(hwinfo->vendor_string, "RISCV_EPI");
-								else
-								{
-									s = search_cpu_info(f, "mvendorid");
-									if (s)
-									{
-										char *v;
-										v = strtok(s, ",");
-										if (v)
-										{
-											if ((strcasecmp(v, "0x5b7") == 0))
-											strcpy(hwinfo->vendor_string, "RISCV_SOPHON");
-										}
-									}
-								}
-
+							}
+						}
+						else {
+							/* mvendorid also indicates RISC-V */
+							s = search_cpu_info(f, "mvendorid");
+							if (s)
+							{
+								if ((strcasecmp(s, "0x5b7") == 0))
+									strcpy(hwinfo->vendor_string, "RISCV_SOPHON");
 							}
 						}
 					}
