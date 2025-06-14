@@ -512,6 +512,8 @@ _linux_get_cpu_info( PAPI_hw_info_t *hwinfo, int *cpuinfo_mhz )
 							{
 								if ((strcasecmp(s, "0x5b7") == 0))
 									strcpy(hwinfo->vendor_string, "RISCV_SOPHON");
+                else if ((strcasecmp(s, "0x710") == 0))
+									strcpy(hwinfo->vendor_string, "RISCV_SPACEMIT");
 							}
 						}
 					}
