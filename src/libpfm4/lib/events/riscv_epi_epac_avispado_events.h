@@ -22,16 +22,16 @@
 
 static const riscv_entry_t riscv_epi_epac_avispado_pe[] = {
     //Avispado
-    {.name = "PAPI_L1_ICM",
+    {.name = "L1_ICM",
      .code = 0x001,
      .desc = "Level 1 instruction cache misses" },
-    {.name = "PAPI_L1_DCM",
+    {.name = "L1_DCM",
      .code = 0x002,
      .desc = "Level 1 data cache misses" },
-    {.name = "PAPI_TLB_IM",
+    {.name = "TLB_IM",
      .code = 0x003,
      .desc = "Instruction translation lookaside buffer misses" },
-    {.name = "PAPI_TLB_DM",
+    {.name = "TLB_DM",
      .code = 0x004,
      .desc = "Data translation lookaside buffer misses" },
     {.name = "NUM_EXCEPTIONS",
