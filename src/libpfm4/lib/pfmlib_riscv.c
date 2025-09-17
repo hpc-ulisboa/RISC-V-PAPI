@@ -30,6 +30,7 @@
 #include "events/riscv_sophon_sg2042_events.h" /* Sophon SG2042 event tables */
 #include "events/riscv_spacemit_k1_8_events.h" /* SpacemiT K1 8 event tables */
 #include "events/riscv_epi_epac_avispado_events.h" /* EPI Avispado event tables */
+#include "events/riscv_eupilot_vec_atrevido_events.h" /* EUPILOT Atrevido event tables */
 
 pfm_riscv_config_t pfm_riscv_cfg;
 
@@ -120,6 +121,11 @@ int pfm_riscv_detect(void *this)
     else if (strcmp(buffer, "epi,avispado") == 0)
     {
         pfm_riscv_cfg.implementation = EPI_EPAC_AVISPADO;
+        return PFM_SUCCESS;
+    }
+    else if (strcmp(buffer, "eupilot,atrevido") == 0)
+    {
+        pfm_riscv_cfg.implementation = EUPILOT_VEC_ATREVIDO;
         return PFM_SUCCESS;
     }
 

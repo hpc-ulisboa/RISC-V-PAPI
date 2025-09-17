@@ -2350,6 +2350,15 @@ PRESET,PAPI_TOT_CYC,NOT_DERIVED,CYCLES
 PRESET,PAPI_VEC_INS,NOT_DERIVED,VPU_COMPLETED_INST
 
 #####################
+# RISC-V EUPILOT VEC Atrevido+VPU #
+#####################
+CPU,riscv_eupilot_vec_atrevido
+#
+PRESET,PAPI_TOT_INS,NOT_DERIVED,INSTRUCTIONS
+PRESET,PAPI_TOT_CYC,NOT_DERIVED,CYCLES
+PRESET,PAPI_VEC_INS,NOT_DERIVED,VPU_COMPLETED_INST
+
+#####################
 # SpacemiT K1 8 #
 #####################
 CPU,riscv_spacemit_k1_8
