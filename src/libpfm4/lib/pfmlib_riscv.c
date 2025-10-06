@@ -30,6 +30,7 @@
 #include "events/riscv_sophon_sg2042_events.h" /* Sophon SG2042 event tables */
 #include "events/riscv_spacemit_k1_8_events.h" /* SpacemiT K1 8 event tables */
 #include "events/riscv_epi_epac_avispado_events.h" /* EPI Avispado event tables */
+#include "events/riscv_openhwgroup_cva6_events.h" /* Openhwgroup CVA6 event tables */
 
 pfm_riscv_config_t pfm_riscv_cfg;
 
