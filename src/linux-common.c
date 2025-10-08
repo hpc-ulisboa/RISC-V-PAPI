@@ -509,6 +509,8 @@ _linux_get_cpu_info( PAPI_hw_info_t *hwinfo, int *cpuinfo_mhz )
 									strcpy(hwinfo->vendor_string, "RISCV_SIFIVE");
 								else if ((strcasecmp(v, "epi") == 0))
 									strcpy(hwinfo->vendor_string, "RISCV_EPI");
+								else if ((strcasecmp(v, "openhwgroup") == 0))
+									strcpy(hwinfo->vendor_string, "RISCV_OPENHWGROUP");
 							}
 						}
 						else {

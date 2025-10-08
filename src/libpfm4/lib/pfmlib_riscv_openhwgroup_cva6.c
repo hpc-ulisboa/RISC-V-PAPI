@@ -36,7 +36,7 @@ static int pfm_riscv_detect_openhwgroup_cva6(void *this)
 pfmlib_pmu_t riscv_openhwgroup_cva6_support = {
     .desc = "RISC-V OpenHWGroup CVA6",
     .name = "riscv_openhwgroup_cva6",
-    .pmu = PFM_PMU_RISCV_SPACEMIT_K1_8,
+    .pmu = PAPI_VENDOR_RISCV_OPENHWGROUP,
     .pme_count = LIBPFM_ARRAY_SIZE(riscv_openhwgroup_cva6_pe),
     .type = PFM_PMU_TYPE_CORE,
     .supported_plm = RISCV_PLM,
