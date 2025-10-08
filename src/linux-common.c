@@ -171,9 +171,6 @@ decode_vendor_string( char *s, int *vendor )
 	else
 		*vendor = PAPI_VENDOR_UNKNOWN;
 
-	printf("decode_vendor_string: s = '%s'\n", s);
-	printf("decode_vendor_string: vendor = %d\n", *vendor);
-	//sprintf( maxargs, "/proc/%d/exe", ( int ) pid );
 }
 
 static FILE *

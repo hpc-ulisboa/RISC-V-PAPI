@@ -123,6 +123,11 @@ int pfm_riscv_detect(void *this)
         pfm_riscv_cfg.implementation = EPI_EPAC_AVISPADO;
         return PFM_SUCCESS;
     }
+    else if (strcmp(buffer, "openhwgroup, cva6") == 0)
+    {
+        pfm_riscv_cfg.implementation = OPENHWGROUP_CVA6;
+        return PFM_SUCCESS;
+    }
 
     ret = pfmlib_getcpuinfo_attr("model name", buffer, sizeof(buffer));
     if (ret == -1)
