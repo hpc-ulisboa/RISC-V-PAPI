@@ -250,6 +250,7 @@ endif
 INCARCH = $(INC_RISCV)
 SRCS += pfmlib_riscv.c \
         pfmlib_riscv_sifive_u74.c \
+        pfmlib_riscv_sifive_p550.c \
         pfmlib_riscv_sophon_sg2042.c \
         pfmlib_riscv_epi_epac_avispado.c \
         pfmlib_riscv_eupilot_vec_atrevido.c \
@@ -438,6 +439,7 @@ INC_ARM64=pfmlib_arm_priv.h			\
 
 INC_RISCV=pfmlib_riscv_priv.h \
 	events/riscv_sifive_u74_events.h \
+	events/riscv_sifive_p550_events.h \
   events/riscv_sophon_sg2042_events.h \
   events/riscv_epi_epac_avispado_events.h \
   events/riscv_eupilot_vec_atrevido_events.h \

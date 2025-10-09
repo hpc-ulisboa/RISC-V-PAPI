@@ -27,6 +27,7 @@
 #include "pfmlib_riscv_priv.h"
 
 #include "events/riscv_sifive_u74_events.h" /* SiFive U74 event tables */
+#include "events/riscv_sifive_p550_events.h" /* SiFive P550 event tables */
 #include "events/riscv_sophon_sg2042_events.h" /* Sophon SG2042 event tables */
 #include "events/riscv_spacemit_k1_8_events.h" /* SpacemiT K1 8 event tables */
 #include "events/riscv_epi_epac_avispado_events.h" /* EPI Avispado event tables */
@@ -116,6 +117,11 @@ int pfm_riscv_detect(void *this)
     if (strcmp(buffer, "sifive,u74-mc") == 0)
     {
         pfm_riscv_cfg.implementation = SIFIVE_U74_MC;
+        return PFM_SUCCESS;
+    }
+    else if (strcmp(buffer, "sifive,p550") == 0)
+    {
+        pfm_riscv_cfg.implementation = SIFIVE_P550;
         return PFM_SUCCESS;
     }
     else if (strcmp(buffer, "epi,avispado") == 0)

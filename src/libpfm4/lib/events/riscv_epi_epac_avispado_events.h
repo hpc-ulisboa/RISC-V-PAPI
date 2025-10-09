@@ -1,7 +1,7 @@
 /*
  * =============================================================================
  *
- *                   Copyright (c) 2024 BSC
+ *                   Copyright (c) 2025 BSC
  *                             All rights reserved
  *
  * This file contains BSC proprietary and confidential information and has
@@ -17,7 +17,6 @@
 
 /*
  * EPI EPAC Avispado+VPU RISC-V Core
- * Based on my imagination
  */
 
 static const riscv_entry_t riscv_epi_epac_avispado_pe[] = {

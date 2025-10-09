@@ -763,6 +763,7 @@ extern pfmlib_pmu_t s390x_cpum_cf_support;
 extern pfmlib_pmu_t s390x_cpum_sf_support;
 
 extern pfmlib_pmu_t riscv_sifive_u74_support;
+extern pfmlib_pmu_t riscv_sifive_p550_support;
 extern pfmlib_pmu_t riscv_sophon_sg2042_support;
 extern pfmlib_pmu_t riscv_epi_epac_avispado_support;
 extern pfmlib_pmu_t riscv_eupilot_vec_atrevido_support;

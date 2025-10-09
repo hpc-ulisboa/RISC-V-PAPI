@@ -39,11 +39,12 @@ typedef union pfm_riscv_reg
 } pfm_riscv_reg_t;
 
 typedef enum {
-    SIFIVE_U74_MC,   // SiFive U74-MC Core
-    SOPHON_SG2042,   // Sophon SG2042
-    EPI_EPAC_AVISPADO,   // EPI EPAC Avispado+VPU
-    EUPILOT_VEC_ATREVIDO,   // EUPILOT VEC Atrevido+VPU
-    SPACEMIT_K1_8 // SpacemiT K1 8
+    SIFIVE_U74_MC,        // SiFive U74-MC Core
+    SIFIVE_P550,          // SiFive P550 Core
+    SOPHON_SG2042,        // Sophon SG2042
+    EPI_EPAC_AVISPADO,    // EPI EPAC Avispado+VPU
+    EUPILOT_VEC_ATREVIDO, // EUPILOT VEC Atrevido+VPU
+    SPACEMIT_K1_8         // SpacemiT K1 8
 } pfm_riscv_implementation_t;
 
 typedef struct {

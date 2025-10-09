@@ -11,13 +11,14 @@
  *
  * ===============================[ INFORMATION ]===============================
  *
- * Author(s)  : Rafel Albert Bros
+ * Author(s)  : Rafel Bros Esqueu
+                Fabio Banchelli
  * Contact(s) : rafel.brosesqueu@bsc.es
+                fabio.banchelli@bsc.es
  */
 
 /*
  * EUPILOT VEC Atrevido+VPU RISC-V Core
- * Based on my imagination
  */
 
 static const riscv_entry_t riscv_eupilot_vec_atrevido_pe[] = {
