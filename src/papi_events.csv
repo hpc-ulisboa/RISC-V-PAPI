@@ -2327,6 +2327,18 @@ CPU,riscv_sifive_p550
 #
 PRESET,PAPI_TOT_INS,NOT_DERIVED,INSTRUCTIONS
 PRESET,PAPI_TOT_CYC,NOT_DERIVED,CYCLES
+#
+PRESET,PAPI_INT_INS,DERIVED_ADD,integer_load_retired,integer_store_retired,integer_arithmetic_retired,integer_multiplication_retired,integer_division_retired
+#
+PRESET,PAPI_FP_INS,DERIVED_ADD,fp_add_retired,fp_mul_retired,fp_muladd_retired,fp_div_sqrt_retired,fp_load_retired,fp_store_retired
+PRESET,PAPI_FP_OPS,DERIVED_ADD,fp_add_retired,fp_mul_retired,fp_muladd_retired,fp_div_sqrt_retired
+PRESET,PAPI_FML_INS,NOT_DERIVED,fp_mul_retired
+PRESET,PAPI_FAD_INS,NOT_DERIVED,fp_add_retired
+PRESET,PAPI_FMA_INS,NOT_DERIVED,fp_muladd_retired
+#
+PRESET,PAPI_LST_INS,DERIVED_ADD,integer_load_retired,integer_store_retired,fp_load_retired,fp_store_retired
+PRESET,PAPI_LD_INS,DERIVED_ADD,integer_load_retired,fp_load_retired
+PRESET,PAPI_SR_INS,DERIVED_ADD,integer_store_retired,fp_store_retired
 
 #####################
 # RISC-V Sophon SG2042 #
