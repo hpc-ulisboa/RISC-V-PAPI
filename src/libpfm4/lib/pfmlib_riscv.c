@@ -123,11 +123,6 @@ int pfm_riscv_detect(void *this)
         pfm_riscv_cfg.implementation = EPI_EPAC_AVISPADO;
         return PFM_SUCCESS;
     }
-    else if (strcmp(buffer, "openhwgroup, cva6") == 0)
-    {
-        pfm_riscv_cfg.implementation = OPENHWGROUP_CVA6;
-        return PFM_SUCCESS;
-    }
 
     ret = pfmlib_getcpuinfo_attr("model name", buffer, sizeof(buffer));
     if (ret == -1)
@@ -145,6 +140,20 @@ int pfm_riscv_detect(void *this)
     {
         pfm_riscv_cfg.implementation = SOPHON_SG2042;
         return PFM_SUCCESS;
+    }
+    if (strcmp(buffer, "0x602") == 0)   // OpenHWGroup
+    {
+        ret = pfmlib_getcpuinfo_attr("marchid", buffer, sizeof(buffer));
+        if (ret == -1)
+            return PFM_ERR_NOTSUPP;
+        else
+        {
+            if(strcmp(buffer, "0x3") == 0)    // CVA6
+            {
+                pfm_riscv_cfg.implementation = OPENHWGROUP_CVA6;
+                return PFM_SUCCESS;
+            }
+        }
     }
 
     return PFM_ERR_NOTSUPP;
