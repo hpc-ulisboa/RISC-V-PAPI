@@ -248,7 +248,7 @@ SRCS += pfmlib_riscv_perf_event.c
 endif
 
 INCARCH = $(INC_RISCV)
-SRCS += pfmlib_riscv.c pfmlib_riscv_sifive_u74.c pfmlib_riscv_sophon_sg2042.c pfmlib_riscv_epi_epac_avispado.c pfmlib_riscv_spacemit_k1_8.c
+SRCS += pfmlib_riscv.c pfmlib_riscv_sifive_u74.c pfmlib_riscv_sophon_sg2042.c pfmlib_riscv_epi_epac_avispado.c pfmlib_riscv_spacemit_k1_8.c pfmlib_riscv_openhwgroup_cva6.c
 CFLAGS += -DCONFIG_PFMLIB_ARCH_RISCV
 endif
 

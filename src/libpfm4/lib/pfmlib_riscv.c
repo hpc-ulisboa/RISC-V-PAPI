@@ -30,6 +30,7 @@
 #include "events/riscv_sophon_sg2042_events.h" /* Sophon SG2042 event tables */
 #include "events/riscv_spacemit_k1_8_events.h" /* SpacemiT K1 8 event tables */
 #include "events/riscv_epi_epac_avispado_events.h" /* EPI Avispado event tables */
+#include "events/riscv_openhwgroup_cva6_events.h" /* Openhwgroup CVA6 event tables */
 
 pfm_riscv_config_t pfm_riscv_cfg;
 
@@ -139,6 +140,20 @@ int pfm_riscv_detect(void *this)
     {
         pfm_riscv_cfg.implementation = SOPHON_SG2042;
         return PFM_SUCCESS;
+    }
+    if (strcmp(buffer, "0x602") == 0)   // OpenHWGroup
+    {
+        ret = pfmlib_getcpuinfo_attr("marchid", buffer, sizeof(buffer));
+        if (ret == -1)
+            return PFM_ERR_NOTSUPP;
+        else
+        {
+            if(strcmp(buffer, "0x3") == 0)    // CVA6
+            {
+                pfm_riscv_cfg.implementation = OPENHWGROUP_CVA6;
+                return PFM_SUCCESS;
+            }
+        }
     }
 
     return PFM_ERR_NOTSUPP;

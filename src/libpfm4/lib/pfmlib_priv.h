@@ -766,6 +766,7 @@ extern pfmlib_pmu_t riscv_sifive_u74_support;
 extern pfmlib_pmu_t riscv_sophon_sg2042_support;
 extern pfmlib_pmu_t riscv_epi_epac_avispado_support;
 extern pfmlib_pmu_t riscv_spacemit_k1_8_support;
+extern pfmlib_pmu_t riscv_openhwgroup_cva6_support;
 
 extern pfmlib_os_t *pfmlib_os;
 extern pfmlib_os_t pfmlib_os_perf;
