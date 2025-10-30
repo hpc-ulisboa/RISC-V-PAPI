@@ -11,16 +11,18 @@
  *
  * ===============================[ INFORMATION ]===============================
  *
- * Author(s)  : Fabio Banchelli
- * Contact(s) : fabio.banchelli@bsc.es
+ * Author(s)  : Rafel Bros Esqueu
+                Fabio Banchelli
+ * Contact(s) : rafel.brosesqueu@bsc.es
+                fabio.banchelli@bsc.es
  */
 
 /*
- * EPI EPAC Avispado+VPU RISC-V Core
+ * EUPILOT VEC Atrevido+VPU RISC-V Core
  */
 
-static const riscv_entry_t riscv_epi_epac_avispado_pe[] = {
-    //Avispado
+static const riscv_entry_t riscv_eupilot_vec_atrevido_pe[] = {
+    //Atrevido
     {.name = "L1_ICM",
      .code = 0x001,
      .desc = "Level 1 instruction cache misses" },

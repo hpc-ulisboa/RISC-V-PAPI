@@ -670,8 +670,10 @@ static pfmlib_pmu_t *pfmlib_pmus[]=
 
 #ifdef CONFIG_PFMLIB_ARCH_RISCV
 	&riscv_sifive_u74_support,
+	&riscv_sifive_p550_support,
 	&riscv_sophon_sg2042_support,
 	&riscv_epi_epac_avispado_support,
+	&riscv_eupilot_vec_atrevido_support,
 	&riscv_spacemit_k1_8_support,
 	&riscv_openhwgroup_cva6_support,
 #endif

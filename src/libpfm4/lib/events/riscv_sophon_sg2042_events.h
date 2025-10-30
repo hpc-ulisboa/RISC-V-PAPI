@@ -1,7 +1,7 @@
 /*
  * =============================================================================
  *
- *                   Copyright (c) 2024 BSC
+ *                   Copyright (c) 2025 BSC
  *                             All rights reserved
  *
  * This file contains BSC proprietary and confidential information and has
@@ -12,7 +12,7 @@
  * ===============================[ INFORMATION ]===============================
  *
  * Author(s)  : Fabio Banchelli
-                Rafel Bros
+                Rafel Bros Esqueu
  * Contact(s) : fabio.banchelli@bsc.es
                 rafel.brosesqueu@bsc.es
  */

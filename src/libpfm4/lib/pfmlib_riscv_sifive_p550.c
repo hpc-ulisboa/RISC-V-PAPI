@@ -1,7 +1,7 @@
 /*
  * =============================================================================
  *
- *                   Copyright (c) 2024 BSC
+ *                   Copyright (c) 2025 BSC
  *                             All rights reserved
  *
  * This file contains BSC proprietary and confidential information and has
@@ -18,9 +18,9 @@
 /* private headers */
 #include "pfmlib_priv.h"			/* library private */
 #include "pfmlib_riscv_priv.h"
-#include "events/riscv_spacemit_k1_8_events.h"
+#include "events/riscv_sifive_p550_events.h"
 
-static int pfm_riscv_detect_spacemit_k1_8(void *this)
+static int pfm_riscv_detect_sifive_p550(void *this)
 {
     int ret;
 
@@ -28,23 +28,23 @@ static int pfm_riscv_detect_spacemit_k1_8(void *this)
     if (ret != PFM_SUCCESS)
         return PFM_ERR_NOTSUPP;
     
-    if (pfm_riscv_cfg.implementation == SPACEMIT_K1_8) 
+    if (pfm_riscv_cfg.implementation == SIFIVE_P550)
         return PFM_SUCCESS;
 
     return PFM_ERR_NOTSUPP;
 }
 
-/* RISC-V SpacemiT K1 8 support */
-pfmlib_pmu_t riscv_spacemit_k1_8_support = {
-    .desc = "RISC-V SpacemiT K1 8",
-    .name = "riscv_spacemit_k1_8",
-    .pmu = PFM_PMU_RISCV_SPACEMIT_K1_8,
-    .pme_count = LIBPFM_ARRAY_SIZE(riscv_spacemit_k1_8_pe),
+/* RISC-V SiFive P550 support */
+pfmlib_pmu_t riscv_sifive_p550_support = {
+    .desc = "RISC-V SiFive P550",
+    .name = "riscv_sifive_p550",
+    .pmu = PFM_PMU_RISCV_SIFIVE_P550,
+    .pme_count = LIBPFM_ARRAY_SIZE(riscv_sifive_p550_pe),
     .type = PFM_PMU_TYPE_CORE,
     .supported_plm = RISCV_PLM,
-    .pe = riscv_spacemit_k1_8_pe,
-    .pmu_detect = pfm_riscv_detect_spacemit_k1_8,
-    .num_cntrs = 16,
+    .pe = riscv_sifive_p550_pe,
+    .pmu_detect = pfm_riscv_detect_sifive_p550,
+    .num_cntrs = 2,
     .num_fixed_cntrs = 2,
     .max_encoding = 1,
 
