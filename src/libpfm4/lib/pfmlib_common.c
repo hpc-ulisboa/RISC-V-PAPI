@@ -675,6 +675,7 @@ static pfmlib_pmu_t *pfmlib_pmus[]=
 	&riscv_epi_epac_avispado_support,
 	&riscv_eupilot_vec_atrevido_support,
 	&riscv_spacemit_k1_8_support,
+	&riscv_openhwgroup_cva6_support,
 #endif
 
 #ifdef __linux__
