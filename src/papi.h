@@ -389,7 +389,7 @@ All of the functions in the PerfAPI should use the following set of constants.
 #define PAPI_VENDOR_RISCV_SOPHON    10
 #define PAPI_VENDOR_RISCV_EPI       11
 #define PAPI_VENDOR_RISCV_SPACEMIT  12
-#define PAPI_VENDOR_RISCV_OPENHWGROUP 73
+#define PAPI_VENDOR_RISCV_OPENHWGROUP 14
 
 /** @} */
 
