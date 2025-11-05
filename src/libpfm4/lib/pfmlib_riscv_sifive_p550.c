@@ -11,7 +11,7 @@
  *
  * ===============================[ INFORMATION ]===============================
  *
- * Author(s)  : Rafel Albert Esqueu
+ * Author(s)  : Rafel Bros Esqueu
  * Contact(s) : rafel.brosesqueu@bsc.es
  */
 

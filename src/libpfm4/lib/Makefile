@@ -248,7 +248,6 @@ SRCS += pfmlib_riscv_perf_event.c
 endif
 
 INCARCH = $(INC_RISCV)
-<<<<<<< HEAD
 SRCS += pfmlib_riscv.c \
         pfmlib_riscv_sifive_u74.c \
         pfmlib_riscv_sifive_p550.c \
