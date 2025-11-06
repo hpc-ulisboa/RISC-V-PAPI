@@ -18,9 +18,9 @@
 /* private headers */
 #include "pfmlib_priv.h"			/* library private */
 #include "pfmlib_riscv_priv.h"
-#include "events/riscv_spacemit_k1_8_events.h"
+#include "events/riscv_eupilot_vec_atrevido_events.h"
 
-static int pfm_riscv_detect_spacemit_k1_8(void *this)
+static int pfm_riscv_detect_eupilot_vec_atrevido(void *this)
 {
     int ret;
 
@@ -28,23 +28,23 @@ static int pfm_riscv_detect_spacemit_k1_8(void *this)
     if (ret != PFM_SUCCESS)
         return PFM_ERR_NOTSUPP;
     
-    if (pfm_riscv_cfg.implementation == SPACEMIT_K1_8) 
+    if (pfm_riscv_cfg.implementation == EUPILOT_VEC_ATREVIDO)
         return PFM_SUCCESS;
 
     return PFM_ERR_NOTSUPP;
 }
 
-/* RISC-V SpacemiT K1 8 support */
-pfmlib_pmu_t riscv_spacemit_k1_8_support = {
-    .desc = "RISC-V SpacemiT K1 8",
-    .name = "riscv_spacemit_k1_8",
-    .pmu = PFM_PMU_RISCV_SPACEMIT_K1_8,
-    .pme_count = LIBPFM_ARRAY_SIZE(riscv_spacemit_k1_8_pe),
+/* RISC-V EUPILOT VEC Atrevido+VPU support */
+pfmlib_pmu_t riscv_eupilot_vec_atrevido_support = {
+    .desc = "RISC-V VEC Atrevido+VPU",
+    .name = "riscv_eupilot_vec_atrevido",
+    .pmu = PFM_PMU_RISCV_EUPILOT_VEC_ATREVIDO,
+    .pme_count = LIBPFM_ARRAY_SIZE(riscv_eupilot_vec_atrevido_pe),
     .type = PFM_PMU_TYPE_CORE,
     .supported_plm = RISCV_PLM,
-    .pe = riscv_spacemit_k1_8_pe,
-    .pmu_detect = pfm_riscv_detect_spacemit_k1_8,
-    .num_cntrs = 16,
+    .pe = riscv_eupilot_vec_atrevido_pe,
+    .pmu_detect = pfm_riscv_detect_eupilot_vec_atrevido,
+    .num_cntrs = 2,
     .num_fixed_cntrs = 2,
     .max_encoding = 1,
 
